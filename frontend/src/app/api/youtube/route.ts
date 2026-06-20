@@ -9,18 +9,11 @@ export async function GET() {
     // Hardcoded Channel ID to avoid fragile HTML extraction
     const channelId = 'UChEEVWdMA0N0XUqBad-OCkA';
     
-    // We still fetch the HTML to get the subscriber count, but we don't throw if it fails
-    let html = '';
-    try {
-      const htmlRes = await fetch(`https://www.youtube.com/${handle}`, { cache: 'no-store' });
-      if (htmlRes.ok) html = await htmlRes.text();
-    } catch (e) {
-      console.error("Failed to fetch YT html for subs", e);
-    }
+    // Subscriber count is hardcoded as requested by the user, avoiding heavy HTML fetching.
 
     // 2. Fetch RSS Feed
     const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-    const rssRes = await fetch(rssUrl, { cache: 'no-store' });
+    const rssRes = await fetch(rssUrl, { next: { revalidate: 3600 } });
     if (!rssRes.ok) throw new Error('Failed to fetch RSS feed');
     const rssText = await rssRes.text();
 

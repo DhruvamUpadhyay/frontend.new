@@ -1,0 +1,19 @@
+{
+  "name": "Forensics By Priyanshi",
+  "short_name": "FBP",
+  "description": "India's fastest-growing forensic science education platform. Master forensic science with expert guidance from Priyanshi Jain.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1D1A39",
+  "theme_color": "#F59F59",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "science"]
+}

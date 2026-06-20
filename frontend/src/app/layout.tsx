@@ -16,26 +16,60 @@ const outfit = Outfit({
 import { db } from '@/config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { ToastProvider } from '@/components/ToastProvider';
+import { ErrorSuppressor } from '@/components/ErrorSuppressor';
+import { TawkController } from '@/components/TawkController';
 
-export const revalidate = 60; // Cache SEO data for 60 seconds
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://forensicsbypriyanshi.com';
 
 export async function generateMetadata(): Promise<Metadata> {
+  let title = "Forensics By Priyanshi — India's Premier Forensic Science Academy";
+  let description = "India's leading forensic science education and exam preparation platform. Premium courses for CUET PG, NFSU Entrance, UGC NET, study notes, and direct 1-on-1 mentorship from Priyanshi Jain.";
+
   try {
     const themeSnap = await getDoc(doc(db, 'theme', 'global'));
     if (themeSnap.exists()) {
       const data = themeSnap.data();
-      return {
-        title: data.siteTitle || "FBP - Master Forensic Science",
-        description: data.metaDescription || "Master Forensic Science with Expert Guidance",
-      };
+      title = data.siteTitle || title;
+      description = data.metaDescription || description;
     }
   } catch (error) {
     console.error("Error fetching SEO metadata:", error);
   }
-  
+
   return {
-    title: "FBP - Master Forensic Science",
-    description: "Master Forensic Science with Expert Guidance",
+    title: {
+      template: `%s | ${title}`,
+      default: title,
+    },
+    description,
+    metadataBase: new URL(SITE_URL),
+    alternates: {
+      canonical: '/',
+    },
+    manifest: '/manifest.json',
+    openGraph: {
+      type: 'website',
+      locale: 'en_IN',
+      url: SITE_URL,
+      siteName: 'Forensics By Priyanshi',
+      title,
+      description,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
+    },
+    other: {
+      'theme-color': '#1D1A39',
+      'apple-mobile-web-app-capable': 'yes',
+      'apple-mobile-web-app-status-bar-style': 'black-translucent',
+    },
   };
 }
 
@@ -44,12 +78,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    "name": "Forensics By Priyanshi",
+    "url": "https://forensicsbypriyanshi.com",
+    "logo": "https://forensicsbypriyanshi.com/favicon.svg",
+    "sameAs": [
+      "https://www.youtube.com/@ForensicsByPriyanshi",
+      "https://www.instagram.com/forensicsbypriyanshi"
+    ],
+    "description": "India's premier forensic science education platform, founded by Priyanshi Jain. Expert preparation for CUET PG, NFSU Entrance, and UGC NET."
+  };
+
   return (
-    <html
-      lang="en"
-      className={`${manrope.variable} ${outfit.variable} h-full antialiased`}
-    >
+    <html lang="en" suppressHydrationWarning className={`${manrope.variable} ${outfit.variable} h-full antialiased`}>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className="min-h-full flex flex-col bg-[#1D1A39] text-white">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
+        <ErrorSuppressor />
+        <TawkController />
         <ToastProvider />
         {children}
         <Script 
@@ -58,6 +111,20 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+              Tawk_API.customStyle = {
+                visibility: {
+                  desktop: {
+                    position: 'br',
+                    xOffset: 15,
+                    yOffset: 15
+                  },
+                  mobile: {
+                    position: 'br',
+                    xOffset: 10,
+                    yOffset: 10
+                  }
+                }
+              };
               (function(){
               var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
               s1.async=true;

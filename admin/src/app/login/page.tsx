@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { auth } from '@/config/firebase';
+import { auth, db } from '@/config/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
+import { addDoc, collection } from 'firebase/firestore';
 
 import { useRouter } from 'next/navigation';
 import { Lock, Phone, Key } from 'lucide-react';
@@ -54,7 +55,18 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
     try {
-      await confirmationResult.confirm(otp);
+      const result = await confirmationResult.confirm(otp);
+      // Audit log: track admin logins
+      try {
+        await addDoc(collection(db, 'system_logs'), {
+          action: 'ADMIN_LOGIN',
+          adminEmail: result.user?.phoneNumber || 'unknown',
+          collectionName: '',
+          docId: '',
+          timestamp: new Date().toISOString(),
+          details: { method: 'phone_otp' },
+        });
+      } catch { /* non-critical */ }
       router.push('/');
     } catch (err: any) {
       setError('Invalid OTP code. Please try again.');

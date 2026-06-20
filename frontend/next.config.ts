@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
         source: '/media/:path*',
         destination: `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/:path*`,
       },
+      {
+        source: '/robots.ts',
+        destination: '/robots.txt',
+      },
+      {
+        source: '/sitemap.ts',
+        destination: '/sitemap.xml',
+      },
     ];
   },
 };

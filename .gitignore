@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firebase admin SDK keys (NEVER commit)
+*-firebase-adminsdk-*.json
+firebase-debug.log
+
+# cloudflare wrangler
+.wrangler/

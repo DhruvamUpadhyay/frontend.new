@@ -1,7 +1,11 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { initializeFirestore } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+} from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,9 +24,15 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Auth
 export const auth = getAuth(app);
 
-// Initialize Cloud Firestore with Long Polling to prevent Next.js Server Component socket timeouts
+// Initialize Cloud Firestore with:
+// - Long Polling to prevent Next.js Server Component socket timeouts
+// - Persistent local cache for offline support (modern API, replaces deprecated enableIndexedDbPersistence)
 export const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true
+  experimentalAutoDetectLongPolling: true,
+  ...(typeof window !== "undefined" ? {
+    localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({}) })
+  } : {})
 });
 
 export default app;
+

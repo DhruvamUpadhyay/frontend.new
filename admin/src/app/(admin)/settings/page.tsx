@@ -1,96 +1,182 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/api/client';
-import { Paintbrush, Code, Save } from 'lucide-react';
+import { Save, Loader2, RefreshCw, AlertTriangle, Bell, ShieldAlert, History } from 'lucide-react';
 
-export default function ThemeSettings() {
-  const [settingsId, setSettingsId] = useState<string | null>(null);
-  
-  const [primaryColor, setPrimaryColor] = useState('#1D1A39'); // Default Dark Blue
-  const [accentColor, setAccentColor] = useState('#F59F59'); // Default Orange
-  const [secondaryColor, setSecondaryColor] = useState('#E8BCB9'); // Default Pink
-  const [customCss, setCustomCss] = useState('');
+export default function SystemSettings() {
+  const [data, setData] = useState<any>({
+    maintenanceMode: false,
+    bannerActive: false,
+    bannerText: "",
+    bannerColor: "#F59F59"
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const fetchSettings = async () => {
+    setLoading(true);
     try {
-      const data = await apiClient.get('settings');
-      if (data && data.length > 0) {
-        const s = data[0];
-        setSettingsId(s.id);
-        setPrimaryColor(s.primaryColor || '#1D1A39');
-        setAccentColor(s.accentColor || '#F59F59');
-        setSecondaryColor(s.secondaryColor || '#E8BCB9');
-        setCustomCss(s.customCss || '');
+      const allSettings = await apiClient.get('settings');
+      const systemDoc = allSettings.find((s: any) => s.id === 'system');
+      if (systemDoc) {
+        setData({
+          maintenanceMode: systemDoc.maintenanceMode || false,
+          bannerActive: systemDoc.bannerActive || false,
+          bannerText: systemDoc.bannerText || "",
+          bannerColor: systemDoc.bannerColor || "#F59F59"
+        });
       }
-    } catch (err) { console.error(err); }
+    } catch (err: any) {
+      console.error(err);
+      setError('Failed to load system settings.');
+    }
+    setLoading(false);
   };
 
-  useEffect(() => { fetchSettings(); }, []);
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const data = { primaryColor, accentColor, secondaryColor, customCss };
+  const handleSave = async () => {
+    setSaving(true);
+    setError('');
     try {
-      if (settingsId) await apiClient.put('settings', settingsId, data);
-      else await apiClient.post('settings', data);
-      alert('Theme Settings Saved! Refresh the main site to see changes.');
-    } catch (err) { alert("Failed to save settings"); }
+      await apiClient.put('settings', 'system', data);
+      alert('System settings saved successfully! Changes will take effect on the public site immediately.');
+    } catch (err: any) {
+      setError(err.message || 'Failed to save settings');
+    }
+    setSaving(false);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-[#F59F59]" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-2xl font-bold text-[#1D1A39]">Theme & Customization</h1>
-        <p className="text-[#1D1A39]/60 font-medium">Edit colors and global CSS for the public site.</p>
+    <div className="space-y-8 max-w-4xl">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-[#1D1A39] mb-2 font-display">System Settings</h1>
+          <p className="text-[#1D1A39]/60 font-medium">Control maintenance status and alert banners on the live website.</p>
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={fetchSettings}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#1D1A39]/10 rounded-xl font-bold text-[#1D1A39] hover:bg-gray-50 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Reload
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#1D1A39] text-white rounded-xl font-bold hover:bg-[#1D1A39]/90 transition-colors disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saving ? 'Saving...' : 'Save Settings'}
+          </button>
+        </div>
       </div>
 
-      <form onSubmit={handleSave} className="bg-white p-8 rounded-2xl shadow-sm border border-[#1D1A39]/10 space-y-8">
-        
-        {/* Colors */}
-        <div>
-          <h2 className="text-lg font-bold flex items-center gap-2 mb-4"><Paintbrush className="w-5 h-5 text-[#F59F59]" /> Global Colors</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block font-bold mb-2 text-sm">Primary Color (Nav, Dark BG)</label>
-              <div className="flex items-center gap-4">
-                <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="w-12 h-12 rounded cursor-pointer" />
-                <input type="text" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="flex-1 bg-[#fafafa] border rounded-xl px-4 py-2" />
+      {error && (
+        <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-bold border border-red-100 flex items-center gap-2">
+          <ShieldAlert className="w-5 h-5 shrink-0" />
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Maintenance Mode */}
+        <div className="bg-white p-6 rounded-2xl border border-[#1D1A39]/10 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+                <AlertTriangle className="w-5 h-5" />
               </div>
+              <h2 className="text-lg font-bold text-[#1D1A39]">Maintenance Mode</h2>
             </div>
-            <div>
-              <label className="block font-bold mb-2 text-sm">Accent Color (Buttons, Highlights)</label>
-              <div className="flex items-center gap-4">
-                <input type="color" value={accentColor} onChange={e => setAccentColor(e.target.value)} className="w-12 h-12 rounded cursor-pointer" />
-                <input type="text" value={accentColor} onChange={e => setAccentColor(e.target.value)} className="flex-1 bg-[#fafafa] border rounded-xl px-4 py-2" />
-              </div>
-            </div>
-            <div>
-              <label className="block font-bold mb-2 text-sm">Secondary Color (Light Backgrounds)</label>
-              <div className="flex items-center gap-4">
-                <input type="color" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="w-12 h-12 rounded cursor-pointer" />
-                <input type="text" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="flex-1 bg-[#fafafa] border rounded-xl px-4 py-2" />
-              </div>
-            </div>
+            <p className="text-gray-500 text-sm font-medium mb-6">
+              When activated, the public website will immediately display a premium "Under Maintenance" landing screen, blocking access to all features except this dashboard.
+            </p>
+          </div>
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+            <span className="font-bold text-[#1D1A39]">Activate Maintenance</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={data.maintenanceMode}
+                onChange={(e) => setData({ ...data, maintenanceMode: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+            </label>
           </div>
         </div>
 
-        {/* Custom CSS */}
-        <div>
-          <h2 className="text-lg font-bold flex items-center gap-2 mb-4"><Code className="w-5 h-5 text-[#F59F59]" /> Custom CSS</h2>
-          <p className="text-sm text-gray-500 mb-2">Inject custom CSS directly into the public frontend. Use with caution.</p>
-          <textarea 
-            value={customCss} 
-            onChange={e => setCustomCss(e.target.value)} 
-            placeholder=".my-custom-class { display: none; }"
-            className="w-full h-48 bg-[#1D1A39] text-[#F59F59] font-mono border rounded-xl p-4 focus:outline-none" 
-          />
+        {/* Global Broadcast Notification Banner */}
+        <div className="bg-white p-6 rounded-2xl border border-[#1D1A39]/10 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                <Bell className="w-5 h-5" />
+              </div>
+              <h2 className="text-lg font-bold text-[#1D1A39]">Announcement Banner</h2>
+            </div>
+            <p className="text-gray-500 text-sm font-medium mb-6">
+              Display a dynamic alert banner at the very top of the public website page to broadcast announcements or live news instantly.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 mb-2">
+              <span className="font-bold text-[#1D1A39]">Activate Banner</span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.bannerActive}
+                  onChange={(e) => setData({ ...data, bannerActive: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1D1A39]"></div>
+              </label>
+            </div>
+            
+            {data.bannerActive && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#1D1A39] mb-1">Banner Alert Text</label>
+                  <input
+                    type="text"
+                    value={data.bannerText}
+                    onChange={(e) => setData({ ...data, bannerText: e.target.value })}
+                    placeholder="E.g. Admission open for MSc Forensic Science batches!"
+                    className="w-full px-4 py-2 bg-[#fafafa] border border-[#1D1A39]/10 rounded-xl focus:outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#1D1A39] mb-1">Theme Color</label>
+                  <div className="flex gap-4">
+                    {['#F59F59', '#af445a', '#451952', '#1D1A39'].map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setData({ ...data, bannerColor: c })}
+                        className={`w-8 h-8 rounded-full border-2 transition-transform ${data.bannerColor === c ? 'border-amber scale-110 shadow-md' : 'border-transparent'}`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-
-        <button type="submit" className="bg-[#1D1A39] px-8 py-4 rounded-xl font-bold text-white flex items-center gap-2 hover:bg-[#1D1A39]/90">
-          <Save className="w-5 h-5" /> Save Theme Settings
-        </button>
-
-      </form>
+      </div>
     </div>
   );
-};
+}

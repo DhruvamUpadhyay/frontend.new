@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Menu, X } from 'lucide-react';
 
 export function Navbar({ navData }: { navData?: any }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,6 +26,18 @@ export function Navbar({ navData }: { navData?: any }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Prevent scrolling when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
 
   const navLinkClass = "text-[15px] md:text-base font-bold text-white/80 hover:text-amber transition-colors";
 
@@ -48,40 +61,34 @@ export function Navbar({ navData }: { navData?: any }) {
     <div className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-in-out flex justify-center ${
       isScrolled ? 'top-4 px-4' : 'top-0 px-0'
     }`}>
-      <nav className={`transition-all duration-500 ${
+      <nav className={`transition-all duration-500 relative z-50 ${
         isScrolled 
           ? 'w-full md:w-auto py-3 px-4 sm:px-6 md:px-8 bg-navy/95 backdrop-blur-xl border border-peach/20 shadow-[0_8px_30px_rgba(0,0,0,0.4)] rounded-[2rem] md:rounded-full' 
-          : 'w-full max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 bg-transparent'
+          : 'w-full max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 bg-transparent'
       }`}>
         <div className={`flex flex-col md:flex-row items-center transition-all duration-500 ${isScrolled ? 'justify-center md:gap-10' : 'justify-between w-full'}`}>
           
           {/* Mobile Top Row / Desktop Left */}
-          <div className="flex items-center justify-between w-full md:w-auto">
-            <Link href="/" className="flex items-center gap-2 md:gap-3 group">
+          <div className="flex items-center justify-between w-full md:w-auto z-50">
+            <Link href="/" className="flex items-center gap-2 md:gap-3 group" onClick={() => setIsMobileMenuOpen(false)}>
               <img src="https://res.cloudinary.com/dikk1fy3i/image/upload/v1781625041/fbp_assets/SpIm4monkTVnlRNMgyMZBBMpY.png" alt="Logo" className="w-10 h-10 md:w-14 md:h-14 object-contain group-hover:scale-105 transition-transform drop-shadow-[0_0_10px_rgba(255,255,255,0.2)] shrink-0" />
-              <span className={`font-display font-bold text-lg md:text-2xl tracking-wide text-white transition-all duration-300 whitespace-nowrap flex items-center ${isScrolled ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
+              <span className={`font-display font-bold text-lg md:text-2xl tracking-wide text-white transition-all duration-300 whitespace-nowrap flex items-center ${isScrolled ? 'w-auto opacity-100 md:w-0 md:opacity-0 md:overflow-hidden' : 'w-auto opacity-100'}`}>
                 Forensics By Priyanshi<span className="text-amber">.</span>
               </span>
             </Link>
             
-            <div className={`md:hidden flex items-center overflow-hidden transition-all duration-500 ${isScrolled ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>
-
-            </div>
-          </div>
-
-          {/* Mobile Bottom Row */}
-          <div className="flex md:hidden w-full items-center justify-center gap-4 border-t border-white/10 pt-3 pb-1 flex-wrap">
-            {mainLinks.map((link: any, i: number) => (
-               <a key={i} href={link.url} className={navLinkClass}>{link.label}</a>
-            ))}
-            <div className="flex items-center gap-3 w-full justify-center pt-2 mt-1 border-t border-white/5">
-              <a href="https://app.forensicbypriyanshi.com/login" className="text-white/80 hover:text-white font-medium text-[14px]">Log in</a>
-              <a href="https://app.forensicbypriyanshi.com/signup" className="bg-gradient-to-r from-[#F59F59] to-[#E8BCB9] text-[#1D1A39] px-4 py-1.5 rounded-full font-bold text-[14px]">Sign up</a>
-            </div>
+            {/* Hamburger Button for Mobile */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-white/80 hover:text-white focus:outline-none z-50"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
 
           {/* Desktop Right Side (Links & Button) */}
-          <div className={`hidden md:flex items-center transition-all duration-500 ${isScrolled ? 'gap-6' : 'gap-0'}`}>
+          <div className="hidden md:flex items-center transition-all duration-500 gap-6">
             
             {/* Desktop Links */}
             <div className="flex items-center gap-8 px-2">
@@ -110,7 +117,7 @@ export function Navbar({ navData }: { navData?: any }) {
             </div>
 
             {/* Desktop Right - Login / Signup */}
-            <div className={`hidden md:flex items-center gap-4 border-l border-white/10 pl-6 ml-2 transition-all duration-500 ${isScrolled ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
+            <div className={`flex items-center gap-4 border-l border-white/10 pl-6 ml-2 transition-all duration-500 ${isScrolled ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
               <a 
                 href="https://app.forensicbypriyanshi.com/login" 
                 className="text-white/80 hover:text-white font-medium text-[15px] transition-colors"
@@ -127,6 +134,66 @@ export function Navbar({ navData }: { navData?: any }) {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Drawer Overlay */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-40 bg-[#1D1A39]/98 backdrop-blur-3xl flex flex-col px-8 pt-32 pb-10 overflow-y-auto animate-in fade-in slide-in-from-top duration-300">
+          <div className="flex flex-col space-y-5">
+            <span className="text-[10px] font-extrabold text-amber uppercase tracking-widest border-b border-white/10 pb-1">Navigation</span>
+            {mainLinks.map((link: any, i: number) => (
+              <a 
+                key={i} 
+                href={link.url} 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-lg font-bold text-white/90 hover:text-amber py-1 transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex flex-col space-y-3 pt-8">
+            <span className="text-[10px] font-extrabold text-amber uppercase tracking-widest border-b border-white/10 pb-1">Resources</span>
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              {moreOptions.map((opt: any, i: number) => (
+                opt.url.startsWith('/') ? 
+                <Link 
+                  key={i} 
+                  href={opt.url} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-sm font-semibold text-white/70 hover:text-white transition-colors"
+                >
+                  {opt.label}
+                </Link>
+                :
+                <a 
+                  key={i} 
+                  href={opt.url} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-sm font-semibold text-white/70 hover:text-white transition-colors"
+                >
+                  {opt.label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 mt-auto pt-10">
+            <a 
+              href="https://app.forensicbypriyanshi.com/login" 
+              className="w-full text-center text-white/80 hover:text-white font-bold py-3.5 rounded-full border border-white/10 bg-white/5 text-sm transition-all"
+            >
+              Log in
+            </a>
+            <a 
+              href="https://app.forensicbypriyanshi.com/signup" 
+              className="w-full text-center bg-gradient-to-r from-[#F59F59] to-[#E8BCB9] text-[#1D1A39] font-bold py-3.5 rounded-full text-sm shadow-[0_4px_20px_rgba(245,159,89,0.25)] transition-all"
+            >
+              Sign up
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

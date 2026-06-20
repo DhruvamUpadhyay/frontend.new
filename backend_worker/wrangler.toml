@@ -1,9 +1,0 @@
-name = "fbp-api-worker"
-main = "src/index.ts"
-compatibility_date = "2026-06-13"
-
-[observability]
-enabled = true
-
-[vars]
-# Put your secrets in .dev.vars for local dev, and use `npx wrangler secret put` for production!

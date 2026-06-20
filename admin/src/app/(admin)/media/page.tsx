@@ -16,6 +16,8 @@ export default function MediaManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
+  const [editingFilename, setEditingFilename] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchMedia = async () => {
@@ -33,6 +35,11 @@ export default function MediaManager() {
     fetchMedia();
   }, []);
 
+  const toProxyUrl = (url: string) => {
+    if (!url) return '';
+    return url.replace(/^https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload/, '/media');
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -40,7 +47,7 @@ export default function MediaManager() {
     setUploading(true);
     try {
       // 1. Get Signature from our Worker
-      const { signature, timestamp, cloudName, apiKey } = await apiClient.getCloudinarySignature();
+      const { signature, timestamp, cloudName, apiKey } = await apiClient.getCloudinarySignature('blog');
       
       // 2. Upload to Cloudinary directly from Browser
       const formData = new FormData();
@@ -48,8 +55,8 @@ export default function MediaManager() {
       formData.append('api_key', apiKey);
       formData.append('timestamp', timestamp.toString());
       formData.append('signature', signature);
-      // Optional: Add folder
-      formData.append('folder', 'fbp-cms');
+      // Save images in 'blog' folder prefix
+      formData.append('folder', 'blog');
 
       const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: 'POST',
@@ -77,7 +84,10 @@ export default function MediaManager() {
   };
 
   const copyToClipboard = (url: string, id: string) => {
-    navigator.clipboard.writeText(url);
+    const proxyUrl = toProxyUrl(url);
+    // Copy relative or full host proxy url
+    const fullUrl = window.location.origin + proxyUrl;
+    navigator.clipboard.writeText(fullUrl);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -89,12 +99,29 @@ export default function MediaManager() {
     }
   };
 
+  const handleSaveFilename = async (media: Media) => {
+    if (!editingFilename.trim() || editingFilename === media.filename) {
+      setEditingMediaId(null);
+      return;
+    }
+    try {
+      await apiClient.put('media', media.id, {
+        ...media,
+        filename: editingFilename.trim()
+      });
+      setEditingMediaId(null);
+      fetchMedia();
+    } catch (err) {
+      alert("Failed to update filename");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-[#1D1A39]">Media Manager</h1>
-          <p className="text-[#1D1A39]/60 font-medium">Upload and manage images via Cloudinary.</p>
+          <h1 className="text-2xl font-bold text-[#1D1A39] font-display">Media Manager</h1>
+          <p className="text-[#1D1A39]/60 font-medium">Upload files to Cloudinary and organize under 'blog' folder.</p>
         </div>
         <input 
           type="file" 
@@ -106,27 +133,30 @@ export default function MediaManager() {
         <div className="flex items-center gap-3">
           <button 
             onClick={async () => {
+              if (!confirm("Are you sure you want to delete all local database media references and re-fetch them from Cloudinary? This will clean up stales.")) return;
               try {
                 setUploading(true);
                 const res = await fetch('/api/cloudinary-sync');
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
                 
-                const existingUrls = new Set(mediaList.map(m => m.url));
-                let added = 0;
-                
-                for (const img of data.resources) {
-                  if (!existingUrls.has(img.secure_url)) {
-                    await apiClient.post('media', {
-                      url: img.secure_url,
-                      publicId: img.public_id,
-                      filename: img.public_id.split('/').pop() || 'image',
-                      createdAt: img.created_at || new Date().toISOString()
-                    });
-                    added++;
-                  }
+                // Delete all current media records to start fresh
+                const currentDocs = await apiClient.get('media');
+                for (const doc of currentDocs) {
+                  await apiClient.delete('media', doc.id);
                 }
-                alert(`Successfully synced ${added} existing images from Cloudinary!`);
+                
+                let added = 0;
+                for (const img of data.resources) {
+                  await apiClient.post('media', {
+                    url: img.secure_url,
+                    publicId: img.public_id,
+                    filename: img.public_id.split('/').pop() || 'image',
+                    createdAt: img.created_at || new Date().toISOString()
+                  });
+                  added++;
+                }
+                alert(`Successfully synced and re-imported ${added} images from Cloudinary!`);
                 fetchMedia();
               } catch (err: any) {
                 alert(`Sync failed: ${err.message}`);
@@ -154,10 +184,10 @@ export default function MediaManager() {
         {loading && mediaList.length === 0 ? <p>Loading media...</p> : null}
         
         {mediaList.map(media => (
-          <div key={media.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#1D1A39]/10 flex flex-col group relative overflow-hidden">
-            <div className="w-full h-32 bg-gray-100 rounded-xl mb-4 overflow-hidden flex items-center justify-center relative">
+          <div key={media.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#1D1A39]/10 flex flex-col group relative overflow-hidden justify-between h-56">
+            <div className="w-full h-32 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center relative">
               {media.url ? (
-                <img src={media.url} alt={media.filename} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                <img src={toProxyUrl(media.url)} alt={media.filename} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
               ) : (
                 <ImageIcon className="w-8 h-8 text-gray-400" />
               )}
@@ -180,7 +210,32 @@ export default function MediaManager() {
                 </button>
               </div>
             </div>
-            <p className="text-xs font-bold text-[#1D1A39] truncate" title={media.filename}>{media.filename}</p>
+            
+            {/* Inline Rename Editor */}
+            <div className="mt-3 flex items-center w-full">
+              {editingMediaId === media.id ? (
+                <input
+                  type="text"
+                  value={editingFilename}
+                  onChange={(e) => setEditingFilename(e.target.value)}
+                  onBlur={() => handleSaveFilename(media)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveFilename(media);
+                    if (e.key === 'Escape') setEditingMediaId(null);
+                  }}
+                  autoFocus
+                  className="text-xs font-bold text-[#1D1A39] bg-[#fafafa] border border-peach/50 rounded px-1.5 py-0.5 w-full focus:outline-none focus:border-[#F59F59]"
+                />
+              ) : (
+                <p 
+                  onClick={() => { setEditingMediaId(media.id); setEditingFilename(media.filename); }}
+                  className="text-xs font-bold text-[#1D1A39] truncate hover:text-[#F59F59] cursor-pointer flex-grow select-all" 
+                  title="Click to rename"
+                >
+                  {media.filename}
+                </p>
+              )}
+            </div>
           </div>
         ))}
 
@@ -194,4 +249,4 @@ export default function MediaManager() {
       </div>
     </div>
   );
-};
+}

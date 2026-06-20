@@ -1,36 +1,49 @@
 import { db } from '@/config/firebase';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 import LandingPageClient from './LandingPageClient';
 
 // This is a Next.js Server Component!
 // It runs ONLY on the server, ensuring API keys are never leaked to the browser.
 // It fetches data and pre-renders the HTML for perfect SEO.
 
-// Revalidate every 60 seconds (ISR caching)
-export const revalidate = 60;
+// Revalidate every hour as fallback — admin changes trigger on-demand revalidation instantly
+export const revalidate = 3600;
 
-export default async function Page() {
-  let courses = [];
-  let events = [];
-  let tests = [];
-  let materials = [];
-  let landingPageData = null;
+export default async function LandingPage() {
+  // Fetch initial data for all components
+  let courses: any[] = [];
+  let podcasts: any[] = [];
+  let tests: any[] = [];
+  let materials: any[] = [];
+  let testimonials: any[] = [];
+  let faqs: any[] = [];
+  let blogs: any[] = [];
+  let landingPageData: any = null;
 
   try {
     // Parallel fetching for performance
-    const [coursesSnap, eventsSnap, testsSnap, materialsSnap, landingSnap] = await Promise.all([
+    const [coursesSnap, podcastsSnap, testsSnap, materialsSnap, testimonialsSnap, faqsSnap, landingSnap, blogsSnap] = await Promise.all([
       getDocs(collection(db, 'courses')),
-      getDocs(collection(db, 'events')),
+      getDocs(collection(db, 'podcasts')),
       getDocs(collection(db, 'tests')),
       getDocs(collection(db, 'materials')),
-      getDoc(doc(db, 'landing_page', 'global'))
+      getDocs(collection(db, 'testimonials')),
+      getDocs(collection(db, 'faqs')),
+      getDoc(doc(db, 'landing_page', 'global')),
+      getDocs(query(collection(db, 'blogs'), where('published', '==', true)))
     ]);
 
     courses = coursesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    events = eventsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    podcasts = podcastsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     tests = testsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     materials = materialsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    testimonials = testimonialsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    faqs = faqsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    blogs = blogsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     
+    // Sort blogs by createdAt descending
+    blogs.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
     if (landingSnap.exists()) {
       landingPageData = { id: landingSnap.id, ...landingSnap.data() };
     }
@@ -38,13 +51,44 @@ export default async function Page() {
     console.error("Error fetching data for landing page:", error);
   }
 
+  const faqJsonLd = faqs.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((faq: any) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  } : null;
+
+  const coursesJsonLd = courses.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": courses.map((course: any, index: number) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://forensicsbypriyanshi.com'}/#courses`,
+      "name": course.title
+    }))
+  } : null;
+
   return (
-    <LandingPageClient 
-      initialCourses={courses}
-      initialEvents={events}
-      initialTests={tests}
-      initialMaterials={materials}
-      landingPageData={landingPageData}
-    />
+    <>
+      {faqJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />}
+      {coursesJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(coursesJsonLd) }} />}
+      <LandingPageClient 
+        initialCourses={courses}
+        initialPodcasts={podcasts}
+        initialTests={tests}
+        initialMaterials={materials}
+        initialTestimonials={testimonials}
+        initialFaqs={faqs}
+        initialBlogs={blogs}
+        landingPageData={landingPageData}
+      />
+    </>
   );
 }

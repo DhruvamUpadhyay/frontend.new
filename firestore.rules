@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. PUBLIC CMS CONTENT — Read-only for visitors.
+    //    All writes to these collections happen via the Admin SDK
+    //    (which bypasses rules entirely), so no client write access needed.
+    // ──────────────────────────────────────────────────────────────────────
+    match /landing_page/{document=**} { allow read: if true; }
+    match /events/{document=**}       { allow read: if true; }
+    match /navigation/{document=**}   { allow read: if true; }
+    match /courses/{document=**}      { allow read: if true; }
+    match /tests/{document=**}        { allow read: if true; }
+    match /materials/{document=**}    { allow read: if true; }
+    match /pyq/{document=**}          { allow read: if true; }
+    match /theme/{document=**}        { allow read: if true; }
+    match /media/{document=**}        { allow read: if true; }
+    match /podcasts/{document=**}     { allow read: if true; }
+    match /testimonials/{document=**} { allow read: if true; }
+    match /faqs/{document=**}         { allow read: if true; }
+    match /blogs/{document=**}        { allow read: if true; }
+    match /pages/{document=**}        { allow read: if true; }
+    match /settings/{document=**}     { allow read: if true; }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. NEWSLETTER — Validated create-only for visitors.
+    //    V7 FIX: Remove update permission, enforce field validation.
+    //    V8 FIX: Remove client-side read — admin reads via Admin SDK.
+    // ──────────────────────────────────────────────────────────────────────
+    match /newsletter/{email} {
+      allow create: if email == request.resource.data.email
+                    && request.resource.data.keys().hasOnly(['email', 'timestamp'])
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() < 255
+                    && request.resource.data.timestamp is string;
+      allow read, update, delete: if false;
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Helper function to check if the user is an authorized admin.
+    // Always permits the primary admin phone number, or checks the /admins collection.
+    // ──────────────────────────────────────────────────────────────────────
+    function isAdmin() {
+      return request.auth != null && 
+             request.auth.token.keys().contains('phone_number') && (
+               request.auth.token.phone_number == "+919274173384" ||
+               exists(/databases/$(database)/documents/admins/$(request.auth.token.phone_number))
+             );
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. ADMIN-AUTHENTICATED COLLECTIONS — Read + Write for authorized admins.
+    //    These are the collections the admin panel writes to from the browser.
+    //    Secured with the isAdmin() helper to prevent student privilege escalation.
+    // ──────────────────────────────────────────────────────────────────────
+    match /landing_page/{document=**} { allow write: if isAdmin(); }
+    match /events/{document=**}       { allow write: if isAdmin(); }
+    match /navigation/{document=**}   { allow write: if isAdmin(); }
+    match /courses/{document=**}      { allow write: if isAdmin(); }
+    match /tests/{document=**}        { allow write: if isAdmin(); }
+    match /materials/{document=**}    { allow write: if isAdmin(); }
+    match /pyq/{document=**}          { allow write: if isAdmin(); }
+    match /theme/{document=**}        { allow write: if isAdmin(); }
+    match /media/{document=**}        { allow write: if isAdmin(); }
+    match /podcasts/{document=**}     { allow write: if isAdmin(); }
+    match /testimonials/{document=**} { allow write: if isAdmin(); }
+    match /faqs/{document=**}         { allow write: if isAdmin(); }
+    match /blogs/{document=**}        { allow write: if isAdmin(); }
+    match /pages/{document=**}        { allow write: if isAdmin(); }
+    match /settings/{document=**}     { allow write: if isAdmin(); }
+    match /system_logs/{document=**}  { allow read, write: if isAdmin(); }
+    match /visitor_logs/{document=**} { allow read: if isAdmin(); allow write: if false; }
+    match /admins/{document=**}       { allow read, write: if isAdmin(); }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 4. RATE LIMITS — Server-side only (Admin SDK). No client access.
+    // ──────────────────────────────────────────────────────────────────────
+    match /rate_limits/{document=**}  { allow read, write: if false; }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 5. DENY EVERYTHING ELSE — No catch-all wildcard.
+    // ──────────────────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
