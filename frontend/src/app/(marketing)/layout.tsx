@@ -38,11 +38,26 @@ export default async function MarketingLayout({ children }: { children: React.Re
     console.error("Failed to fetch layouts or system settings data", err);
   }
 
-  const primaryColor = systemData?.primaryColor || '#1D1A39';
-  const accentColor = systemData?.accentColor || '#F59F59';
-  const secondaryColor = systemData?.secondaryColor || '#E8BCB9';
-  const baseFontSize = systemData?.baseFontSize || '14.4px';
-  const customCss = systemData?.customCss || '';
+  // OWASP A03 FIX: Sanitize theme values to prevent CSS injection
+  const sanitizeColor = (c: string) => /^#[0-9a-fA-F]{3,8}$/.test(c) ? c : '#1D1A39';
+  const sanitizeFontSize = (s: string) => /^[0-9.]+(px|rem|em|%)$/.test(s) ? s : '14.4px';
+  const sanitizeCss = (css: string) => {
+    if (!css) return '';
+    // Strip any closing style tags, script tags, HTML tags, and @import directives
+    return css
+      .replace(/<\/?style[^>]*>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/@import\s/gi, '/* blocked-import ')
+      .replace(/expression\s*\(/gi, '/* blocked-expression */')
+      .replace(/javascript\s*:/gi, '/* blocked-js */');
+  };
+
+  const primaryColor = sanitizeColor(systemData?.primaryColor || '#1D1A39');
+  const accentColor = sanitizeColor(systemData?.accentColor || '#F59F59');
+  const secondaryColor = sanitizeColor(systemData?.secondaryColor || '#E8BCB9');
+  const baseFontSize = sanitizeFontSize(systemData?.baseFontSize || '14.4px');
+  const customCss = sanitizeCss(systemData?.customCss || '');
 
   // Render Maintenance Mode Screen if Active
   if (systemData?.maintenanceMode) {

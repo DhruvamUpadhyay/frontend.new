@@ -69,7 +69,16 @@ export default async function AboutPage() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/80 text-xs font-bold tracking-[0.2em] uppercase mb-2">
               <Star className="w-3 h-3 text-amber" /> The Instructor
             </div>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1]" dangerouslySetInnerHTML={{ __html: safeData.title.replace('Priyanshi Jain', '<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber to-peach">Priyanshi Jain</span>') }}>
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1]">
+              {safeData.title.includes('Priyanshi Jain') ? (
+                <>
+                  {safeData.title.split('Priyanshi Jain')[0]}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber to-peach">Priyanshi Jain</span>
+                  {safeData.title.split('Priyanshi Jain')[1]}
+                </>
+              ) : (
+                safeData.title
+              )}
             </h1>
             <p className="text-white/70 text-lg md:text-xl font-medium leading-relaxed">
               {safeData.subtitle}

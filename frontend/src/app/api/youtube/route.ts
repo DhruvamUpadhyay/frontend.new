@@ -70,6 +70,6 @@ export async function GET() {
     return NextResponse.json({ videos: shorts, subscriberCount });
   } catch (error: any) {
     console.error('YouTube API error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch YouTube data' }, { status: 500 });
   }
 }

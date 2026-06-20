@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/config/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 const DEFAULT_NAVIGATION = {
   mainLinks: [
@@ -27,8 +27,7 @@ export async function GET() {
     if (docSnap.exists()) {
       return NextResponse.json(docSnap.data());
     } else {
-      // Auto-seed if it doesn't exist yet!
-      await setDoc(docRef, DEFAULT_NAVIGATION);
+      // Return defaults without writing to DB (GET should be read-only)
       return NextResponse.json(DEFAULT_NAVIGATION);
     }
   } catch (error) {

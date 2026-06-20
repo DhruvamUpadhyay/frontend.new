@@ -3,50 +3,67 @@ import { adminDb } from '@/lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+// A4 FIX: CSRF origin check
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'https://forensicsbypriyanshi.com',
+  'https://www.forensicsbypriyanshi.com',
+];
 
-function checkIpRateLimit(ip: string, limit: number, windowMs: number): boolean {
+// A4 FIX: Firestore-backed persistent rate limiter (survives serverless restarts)
+async function checkTrackRateLimit(ip: string): Promise<boolean> {
+  const sanitizedIp = ip.replace(/[./:\\[\]]/g, '_');
+  const ref = adminDb.collection('rate_limits').doc(`track_${sanitizedIp}`);
   const now = Date.now();
-  
-  if (rateLimitMap.size > 3000) {
-    for (const [key, value] of rateLimitMap.entries()) {
-      if (now > value.resetTime) {
-        rateLimitMap.delete(key);
+  const windowMs = 60 * 1000; // 1 minute
+  const maxAttempts = 30; // 30 page views per minute per IP
+
+  try {
+    return await adminDb.runTransaction(async (tx) => {
+      const doc = await tx.get(ref);
+      const data = doc.data();
+
+      if (!data || now > data.resetTime) {
+        tx.set(ref, { count: 1, resetTime: now + windowMs });
+        return true;
       }
-    }
-    if (rateLimitMap.size > 3000) {
-      rateLimitMap.clear();
-    }
-  }
 
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
-    return true;
-  }
+      if (data.count >= maxAttempts) {
+        return false;
+      }
 
-  if (record.count >= limit) {
-    return false;
+      tx.update(ref, { count: data.count + 1 });
+      return true;
+    });
+  } catch (err) {
+    console.error('Track rate limit check failed:', err);
+    return true; // fail-open
   }
-
-  record.count += 1;
-  return true;
 }
 
 export async function POST(request: Request) {
   try {
+    // A4 FIX: CSRF origin check
+    const origin = request.headers.get('origin') || '';
+    if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Extract IP
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       request.headers.get('x-real-ip') ||
       'unknown';
 
-    // Apply rate limit of 60 requests per 1 minute per IP
-    if (ip !== 'unknown' && !checkIpRateLimit(ip, 60, 60 * 1000)) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    // A4 FIX: Persistent IP-based rate limiting via Firestore
+    if (ip !== 'unknown') {
+      const allowed = await checkTrackRateLimit(ip);
+      if (!allowed) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+      }
     }
 
-    // V10 FIX: Body size validation — tracking payloads should never exceed 5KB
+    // Body size validation
     const rawBody = await request.text();
     if (rawBody.length > 5_000) {
       return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
