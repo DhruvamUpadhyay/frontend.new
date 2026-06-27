@@ -131,14 +131,14 @@ export function Navbar({ navData }: { navData?: any }) {
           <div className={`hidden md:flex md:flex-none items-center gap-4 transition-all duration-300 ${isScrolled ? 'border-l border-plum pl-6 ml-2' : ''}`}>
             <a 
               href="https://app.forensicbypriyanshi.com/login" 
-              className="text-peach hover:text-white font-medium text-[15px] transition-colors font-sans"
+              className="text-white hover:text-amber font-medium text-[15px] transition-colors font-sans"
             >
               Login
             </a>
-            <span className="text-white/40">/</span>
+            <span className="text-white/80">/</span>
             <a 
               href="https://app.forensicbypriyanshi.com/signup" 
-              className="text-peach hover:text-white font-medium text-[15px] transition-colors font-sans"
+              className="text-white hover:text-amber font-medium text-[15px] transition-colors font-sans"
             >
               SignUp
             </a>
