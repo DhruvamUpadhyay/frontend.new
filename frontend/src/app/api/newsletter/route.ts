@@ -106,14 +106,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email address format' }, { status: 400 });
     }
 
-    // Write to Firestore using Admin SDK (bypasses client rules)
+    // Check if already subscribed to prevent duplicate logs/db writes
     const docId = email.toLowerCase().trim();
-    await adminDb.collection('newsletter').doc(docId).set({
-      email: docId,
-      timestamp: new Date().toISOString(),
-    });
+    const existingDoc = await adminDb.collection('newsletter').doc(docId).get();
+    
+    if (!existingDoc.exists) {
+      await adminDb.collection('newsletter').doc(docId).set({
+        email: docId,
+        timestamp: new Date().toISOString(),
+      });
 
-    await logSecurityEvent('NEWSLETTER_SUBSCRIBE', { email: docId, ip });
+      await logSecurityEvent('NEWSLETTER_SUBSCRIBE', { email: docId, ip });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -9,8 +9,8 @@
   --color-amber: #f59f59;
   --color-peach: #e8bcb9;
 
-  --font-sans: var(--font-manrope), sans-serif;
-  --font-display: var(--font-outfit), sans-serif;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-display: var(--font-poppins), sans-serif;
 }
 
 @layer base {
@@ -20,23 +20,27 @@
     font-family: var(--font-sans);
     overflow-x: hidden;
   }
-  html { 
+
+  html {
     scroll-behavior: smooth;
-    font-size: 14.4px; 
+    font-size: 14.4px;
   }
-  
+
   /* Premium Scrollbar */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
+
   ::-webkit-scrollbar-track {
     background: var(--color-navy);
   }
+
   ::-webkit-scrollbar-thumb {
     background: rgba(232, 188, 185, 0.3);
     border-radius: 10px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(245, 159, 89, 0.6);
   }
@@ -73,57 +77,119 @@
   .fade-up-element {
     opacity: 0;
     transform: translateY(40px);
-    transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
     will-change: transform, opacity;
   }
+
   .fade-up-element.visible {
     opacity: 1;
     transform: translateY(0);
   }
-  
-  .stagger-1 { transition-delay: 0.1s; }
-  .stagger-2 { transition-delay: 0.2s; }
-  .stagger-3 { transition-delay: 0.3s; }
+
+  .stagger-1 {
+    transition-delay: 0.1s;
+  }
+
+  .stagger-2 {
+    transition-delay: 0.2s;
+  }
+
+  .stagger-3 {
+    transition-delay: 0.3s;
+  }
 
   /* 3D Flip Utilities */
-  .perspective-1000 { perspective: 1000px; }
-  .preserve-3d { transform-style: preserve-3d; }
-  .backface-hidden { 
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden; 
+  .perspective-1000 {
+    perspective: 1000px;
   }
-  .rotate-y-180 { transform: rotateY(180deg); }
-  
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
   .group:hover .group-hover\:rotate-y-180 {
     transform: rotateY(180deg);
   }
 }
 
 @keyframes float-slow {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
 }
 
 @keyframes float-complex {
-  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
-  33% { transform: translate(40px, -60px) rotate(15deg) scale(1.1); }
-  66% { transform: translate(-30px, 30px) rotate(-15deg) scale(0.9); }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+
+  33% {
+    transform: translate(40px, -60px) rotate(15deg) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-30px, 30px) rotate(-15deg) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { filter: drop-shadow(0 0 10px rgba(245, 159, 89, 0.3)); opacity: 0.15; }
-  50% { filter: drop-shadow(0 0 25px rgba(245, 159, 89, 0.7)); opacity: 0.3; }
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px rgba(245, 159, 89, 0.3));
+    opacity: 0.15;
+  }
+
+  50% {
+    filter: drop-shadow(0 0 25px rgba(245, 159, 89, 0.7));
+    opacity: 0.3;
+  }
 }
 
 @keyframes drift-across {
-  0% { transform: translateX(-10vw) translateY(10vh) rotate(0deg); opacity: 0; }
-  10% { opacity: 0.15; }
-  90% { opacity: 0.15; }
-  100% { transform: translateX(110vw) translateY(-20vh) rotate(180deg); opacity: 0; }
+  0% {
+    transform: translateX(-10vw) translateY(10vh) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.15;
+  }
+
+  90% {
+    opacity: 0.15;
+  }
+
+  100% {
+    transform: translateX(110vw) translateY(-20vh) rotate(180deg);
+    opacity: 0;
+  }
 }
 
 .floating-element {
@@ -141,8 +207,13 @@
 }
 
 @keyframes marquee-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .animate-marquee {
@@ -150,13 +221,24 @@
   width: max-content;
   animation: marquee-scroll 20s linear infinite;
 }
+
 .animate-marquee:hover {
   animation-play-state: paused;
 }
 
-@keyframes dash { to { stroke-dashoffset: -100; } }
-.animate-pulse-slow { animation: pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.animate-ping-slow { animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite; }
+@keyframes dash {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-ping-slow {
+  animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
 
 /* Tawk.to Custom Scaling and Scroll-out Animation */
 iframe[title="chat widget"] {
@@ -177,6 +259,7 @@ iframe[title="chat widget"] {
     transform: scale(0.65) !important;
     transform-origin: bottom right !important;
   }
+
   .tawk-hidden iframe[title="chat widget"] {
     transform: scale(0.65) translateY(120px) !important;
     opacity: 0 !important;

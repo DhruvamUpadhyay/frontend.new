@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
-import { Manrope, Outfit } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 import { db } from '@/config/firebase';
@@ -24,6 +25,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://forensicsbypriyans
 export async function generateMetadata(): Promise<Metadata> {
   let title = "Forensics By Priyanshi — India's Premier Forensic Science Academy";
   let description = "India's leading forensic science education and exam preparation platform. Premium courses for CUET PG, NFSU Entrance, UGC NET, study notes, and direct 1-on-1 mentorship from Priyanshi Jain.";
+  let ogImage = "https://res.cloudinary.com/dikk1fy3i/image/upload/v1781625041/fbp_assets/SpIm4monkTVnlRNMgyMZBBMpY.png";
 
   try {
     const themeSnap = await getDoc(doc(db, 'theme', 'global'));
@@ -31,6 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
       const data = themeSnap.data();
       title = data.siteTitle || title;
       description = data.metaDescription || description;
+      ogImage = data.ogImage || ogImage;
     }
   } catch (error) {
     console.error("Error fetching SEO metadata:", error);
@@ -54,11 +57,13 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'Forensics By Priyanshi',
       title,
       description,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [ogImage],
     },
     robots: {
       index: true,
@@ -92,11 +97,11 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${manrope.variable} ${outfit.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${poppins.variable} antialiased snap-y snap-mandatory scroll-smooth`}>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
-      <body className="min-h-full flex flex-col bg-[#1D1A39] text-white">
+      <body className="min-h-screen flex flex-col bg-[#1D1A39] text-white">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}

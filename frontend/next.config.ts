@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   async rewrites() {
@@ -19,4 +20,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: "forensicsbypriyanshi",
+  project: "fbp-frontend", // Leaving this as fbp-frontend unless user says otherwise
+  silent: !process.env.CI,
+
+  // Upload source maps for readable stack traces
+  widenClientFileUpload: true,
+
+  // Automatically tree-shake Sentry logger in production
+  disableLogger: true,
+});
+

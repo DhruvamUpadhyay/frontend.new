@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: canonicalUrl,
       images: blogPost.coverImage ? [{ url: blogPost.coverImage }] : [],
       publishedTime: blogPost.createdAt || new Date().toISOString(),
-      authors: ['Priyanshi Jain'],
+      authors: [blogPost.authorName || 'Priyanshi Jain'],
       section: 'Forensic Science',
     },
     twitter: {
@@ -109,8 +109,7 @@ export default async function BlogDetailsPage({ params }: PageProps) {
     "dateModified": blogPost.updatedAt || blogPost.createdAt || new Date().toISOString(),
     "author": [{
       "@type": "Person",
-      "name": "Priyanshi Jain",
-      "jobTitle": "Forensic Science Expert & Educator",
+      "name": blogPost.authorName || "Priyanshi Jain",
       "url": "https://forensicsbypriyanshi.com"
     }],
     "publisher": {
@@ -176,10 +175,15 @@ export default async function BlogDetailsPage({ params }: PageProps) {
 
           {/* Meta Header */}
           <div className="space-y-4">
-            <span className="text-xs font-extrabold text-amber uppercase tracking-widest flex items-center gap-1.5">
-              <Calendar className="w-4 h-4" />
-              {blogPost.createdAt ? new Date(blogPost.createdAt).toLocaleDateString('en-US', { dateStyle: 'long' }) : 'Recent Case'}
-            </span>
+            <div className="flex items-center gap-4 flex-wrap">
+              <span className="text-xs font-extrabold text-[#e8bcb9] uppercase tracking-widest flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                By {blogPost.authorName || 'Priyanshi Jain'}
+              </span>
+              <span className="text-xs font-extrabold text-amber uppercase tracking-widest flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                {blogPost.createdAt ? new Date(blogPost.createdAt).toLocaleDateString('en-US', { dateStyle: 'long' }) : 'Recent Case'}
+              </span>
+            </div>
             <h1 className="text-4xl md:text-5xl font-bold font-display text-white leading-tight">
               {blogPost.title}
             </h1>
@@ -198,6 +202,20 @@ export default async function BlogDetailsPage({ params }: PageProps) {
               <p className="text-white/40 italic">This case study has no content.</p>
             )}
           </div>
+
+          {/* Optional CTA Button */}
+          {blogPost.ctaText && blogPost.ctaLink && (
+            <div className="mt-12 pt-8 border-t border-white/10 flex justify-center">
+              <a 
+                href={blogPost.ctaLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-block bg-amber text-navy px-10 py-4 rounded-full font-extrabold text-lg hover:bg-white transition-colors shadow-xl hover:shadow-2xl hover:-translate-y-1 transform duration-300"
+              >
+                {blogPost.ctaText}
+              </a>
+            </div>
+          )}
         </article>
 
         {/* Sticky Table of Contents Sidebar */}

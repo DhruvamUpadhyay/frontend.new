@@ -99,7 +99,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen bg-navy flex flex-col" style={{ backgroundColor: primaryColor }}>
+    <div id="main-scroll-container" className="h-screen w-full bg-navy flex flex-col overflow-y-auto overflow-x-hidden scroll-smooth" style={{ backgroundColor: primaryColor }}>
       {/* Inject System Theme Variable Overrides & Custom CSS */}
       <style dangerouslySetInnerHTML={{__html: `
         :root {
@@ -113,15 +113,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
         ${customCss}
       `}} />
 
-      {/* Broadcast Banner Announcement */}
-      {systemData?.bannerActive && (
-        <div 
-          className="text-center py-2 px-4 text-xs font-extrabold text-white z-50 relative flex items-center justify-center gap-2 shadow-md"
-          style={{ backgroundColor: systemData.bannerColor || '#F59F59' }}
-        >
-          <span>📢 {systemData.bannerText}</span>
-        </div>
-      )}
+
 
       <VisitorTracker />
       <Navbar navData={navData} />

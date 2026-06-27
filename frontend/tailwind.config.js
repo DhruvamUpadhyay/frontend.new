@@ -15,8 +15,8 @@ export default {
         'peach': '#e8bcb9',
       },
       fontFamily: {
-        sans: ['var(--font-manrope)', 'sans-serif'],
-        display: ['var(--font-outfit)', 'sans-serif'],
+        sans: ['var(--font-inter)', 'sans-serif'],
+        display: ['var(--font-poppins)', 'sans-serif'],
       },
     },
   },

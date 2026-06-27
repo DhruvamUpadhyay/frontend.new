@@ -10,11 +10,23 @@ export function Navbar({ navData }: { navData?: any }) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 150);
+    const scrollContainer = document.getElementById('main-scroll-container');
+    
+    const handleScroll = (e?: Event) => {
+      if (scrollContainer) {
+        setIsScrolled(scrollContainer.scrollTop > 50);
+      } else {
+        setIsScrolled(window.scrollY > 50);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    } else {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
   useEffect(() => {
@@ -39,13 +51,13 @@ export function Navbar({ navData }: { navData?: any }) {
     };
   }, [isMobileMenuOpen]);
 
-  const navLinkClass = "text-[15px] md:text-base font-bold text-white/80 hover:text-amber transition-colors";
+  const navLinkClass = "text-[15px] md:text-base font-medium text-white hover:text-amber transition-colors font-sans";
 
   const mainLinks = navData?.mainLinks || [
-    { label: "Mentorship", url: "#guidance" },
+    { label: "Mentorship", url: "#mentorship" },
     { label: "Courses", url: "#courses" },
-    { label: "Notes", url: "#materials-section" },
-    { label: "Test Series", url: "#tests-section" }
+    { label: "Notes", url: "#notes" },
+    { label: "Test Series", url: "#mock-tests" }
   ];
 
   const moreOptions = navData?.dropdownLinks || [
@@ -58,40 +70,38 @@ export function Navbar({ navData }: { navData?: any }) {
   ];
 
   return (
-    <div className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-in-out flex justify-center ${
+    <div className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-in-out flex justify-center ${
       isScrolled ? 'top-4 px-4' : 'top-0 px-0'
     }`}>
-      <nav className={`transition-all duration-500 relative z-50 ${
+      <nav className={`transition-all duration-300 relative z-50 ${
         isScrolled 
-          ? 'w-full md:w-auto py-3 px-4 sm:px-6 md:px-8 bg-navy/95 backdrop-blur-xl border border-peach/20 shadow-[0_8px_30px_rgba(0,0,0,0.4)] rounded-[2rem] md:rounded-full' 
+          ? 'w-full md:w-auto py-3 px-4 sm:px-6 md:px-8 bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] rounded-[2rem] md:rounded-full border border-white/20' 
           : 'w-full max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 bg-transparent'
       }`}>
-        <div className={`flex flex-col md:flex-row items-center transition-all duration-500 ${isScrolled ? 'justify-center md:gap-10' : 'justify-between w-full'}`}>
+        <div className={`flex flex-col md:flex-row items-center transition-all duration-300 ${isScrolled ? 'justify-center md:gap-10' : 'justify-between w-full'}`}>
           
           {/* Mobile Top Row / Desktop Left */}
-          <div className="flex items-center justify-between w-full md:w-auto z-50">
+          <div className="flex items-center justify-between w-full md:w-auto md:flex-none z-50">
             <Link href="/" className="flex items-center gap-2 md:gap-3 group" onClick={() => setIsMobileMenuOpen(false)}>
-              <img src="https://res.cloudinary.com/dikk1fy3i/image/upload/v1781625041/fbp_assets/SpIm4monkTVnlRNMgyMZBBMpY.png" alt="Logo" className="w-10 h-10 md:w-14 md:h-14 object-contain group-hover:scale-105 transition-transform drop-shadow-[0_0_10px_rgba(255,255,255,0.2)] shrink-0" />
-              <span className={`font-display font-bold text-lg md:text-2xl tracking-wide text-white transition-all duration-300 whitespace-nowrap flex items-center ${isScrolled ? 'w-auto opacity-100 md:w-0 md:opacity-0 md:overflow-hidden' : 'w-auto opacity-100'}`}>
-                Forensics By Priyanshi<span className="text-amber">.</span>
+              <img src="https://res.cloudinary.com/dikk1fy3i/image/upload/v1781625041/fbp_assets/SpIm4monkTVnlRNMgyMZBBMpY.png" alt="Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain group-hover:scale-105 transition-transform shrink-0" />
+              <span className={`font-display font-bold text-lg md:text-xl tracking-wide text-white transition-all duration-300 whitespace-nowrap flex items-center ${isScrolled ? 'w-auto opacity-100 md:w-0 md:opacity-0 md:overflow-hidden' : 'w-auto opacity-100'}`}>
+                {navData?.logoText ? navData.logoText : "Forensic Science By Priyanshi"}
               </span>
             </Link>
             
             {/* Hamburger Button for Mobile */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-white/80 hover:text-white focus:outline-none z-50"
+              className="md:hidden p-2 text-peach hover:text-white focus:outline-none z-50"
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
 
-          {/* Desktop Right Side (Links & Button) */}
-          <div className="hidden md:flex items-center transition-all duration-500 gap-6">
-            
-            {/* Desktop Links */}
-            <div className="flex items-center gap-8 px-2">
+          {/* Desktop Center (Links) */}
+          <div className={`hidden md:flex flex-1 items-center justify-center transition-all duration-300 ${isScrolled ? 'flex-none' : ''}`}>
+            <div className="flex items-center gap-6 px-2">
               {mainLinks.map((link: any, i: number) => (
                  <a key={i} href={link.url} className={navLinkClass}>{link.label}</a>
               ))}
@@ -104,96 +114,90 @@ export function Navbar({ navData }: { navData?: any }) {
                   More <ChevronDown className="w-4 h-4" />
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-6 w-56 bg-[#1D1A39] border border-white/10 rounded-2xl shadow-2xl py-3 flex flex-col z-50">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-48 bg-purple border border-plum rounded-xl shadow-2xl py-2 flex flex-col z-50">
                     {moreOptions.map((opt: any, i: number) => (
                       opt.url.startsWith('/') ? 
-                      <Link key={i} href={opt.url} className="px-5 py-2.5 text-[15px] text-white/70 hover:text-white hover:bg-white/5 font-medium transition-colors" onClick={() => setIsDropdownOpen(false)}>{opt.label}</Link>
+                      <Link key={i} href={opt.url} className="px-5 py-2.5 text-[14px] text-peach hover:text-white hover:bg-plum/40 font-sans transition-colors" onClick={() => setIsDropdownOpen(false)}>{opt.label}</Link>
                       :
-                      <a key={i} href={opt.url} className="px-5 py-2.5 text-[15px] text-white/70 hover:text-white hover:bg-white/5 font-medium transition-colors" onClick={() => setIsDropdownOpen(false)}>{opt.label}</a>
+                      <a key={i} href={opt.url} className="px-5 py-2.5 text-[14px] text-peach hover:text-white hover:bg-plum/40 font-sans transition-colors" onClick={() => setIsDropdownOpen(false)}>{opt.label}</a>
                     ))}
                   </div>
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Desktop Right - Login / Signup */}
-            <div className={`flex items-center gap-4 border-l border-white/10 pl-6 ml-2 transition-all duration-500 ${isScrolled ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
-              <a 
-                href="https://app.forensicbypriyanshi.com/login" 
-                className="text-white/80 hover:text-white font-medium text-[15px] transition-colors"
-              >
-                Log in
-              </a>
-              <a 
-                href="https://app.forensicbypriyanshi.com/signup" 
-                className="bg-gradient-to-r from-[#F59F59] to-[#E8BCB9] hover:opacity-90 text-[#1D1A39] px-6 py-2.5 rounded-full font-bold text-[15px] shadow-[0_4px_14px_rgba(245,159,89,0.3)] transition-all flex items-center gap-2"
-              >
-                Sign up
-              </a>
+          {/* Desktop Right (Login / Signup) */}
+          <div className={`hidden md:flex md:flex-none items-center gap-4 transition-all duration-300 ${isScrolled ? 'border-l border-plum pl-6 ml-2' : ''}`}>
+            <a 
+              href="https://app.forensicbypriyanshi.com/login" 
+              className="text-peach hover:text-white font-medium text-[15px] transition-colors font-sans"
+            >
+              Login
+            </a>
+            <span className="text-white/40">/</span>
+            <a 
+              href="https://app.forensicbypriyanshi.com/signup" 
+              className="text-peach hover:text-white font-medium text-[15px] transition-colors font-sans"
+            >
+              SignUp
+            </a>
+          </div>
+
+          {/* Mobile Menu Dropdown */}
+          <div className={`md:hidden fixed inset-0 top-0 pt-24 bg-navy z-40 transition-all duration-300 ease-in-out flex flex-col ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
+            <div className="flex-1 overflow-y-auto px-6 pb-24">
+              <div className="flex flex-col gap-6">
+                {mainLinks.map((link: any, i: number) => (
+                  <a 
+                    key={i} 
+                    href={link.url} 
+                    className="text-2xl font-display font-bold text-white border-b border-plum/30 pb-4"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                
+                <div className="pt-2">
+                  <span className="text-sm font-bold text-peach mb-4 block uppercase tracking-wider">More Resources</span>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                    {moreOptions.map((opt: any, i: number) => (
+                      opt.url.startsWith('/') ? 
+                      <Link key={i} href={opt.url} className="text-lg text-white/80 font-sans" onClick={() => setIsMobileMenuOpen(false)}>{opt.label}</Link>
+                      :
+                      <a key={i} href={opt.url} className="text-lg text-white/80 font-sans" onClick={() => setIsMobileMenuOpen(false)}>{opt.label}</a>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 mt-8 pt-8 border-t border-plum/30">
+                  <a 
+                    href="https://app.forensicbypriyanshi.com/login" 
+                    className="w-full py-4 text-center text-peach border border-peach/50 rounded-xl font-bold font-sans text-lg"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Log in
+                  </a>
+                  <a 
+                    href="https://app.forensicbypriyanshi.com/signup" 
+                    className="w-full py-4 text-center bg-amber text-navy rounded-xl font-bold font-display text-lg shadow-lg"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sign up
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Drawer Overlay */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-[#1D1A39]/98 backdrop-blur-3xl flex flex-col px-8 pt-32 pb-10 overflow-y-auto animate-in fade-in slide-in-from-top duration-300">
-          <div className="flex flex-col space-y-5">
-            <span className="text-[10px] font-extrabold text-amber uppercase tracking-widest border-b border-white/10 pb-1">Navigation</span>
-            {mainLinks.map((link: any, i: number) => (
-              <a 
-                key={i} 
-                href={link.url} 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-lg font-bold text-white/90 hover:text-amber py-1 transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="flex flex-col space-y-3 pt-8">
-            <span className="text-[10px] font-extrabold text-amber uppercase tracking-widest border-b border-white/10 pb-1">Resources</span>
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              {moreOptions.map((opt: any, i: number) => (
-                opt.url.startsWith('/') ? 
-                <Link 
-                  key={i} 
-                  href={opt.url} 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-sm font-semibold text-white/70 hover:text-white transition-colors"
-                >
-                  {opt.label}
-                </Link>
-                :
-                <a 
-                  key={i} 
-                  href={opt.url} 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-sm font-semibold text-white/70 hover:text-white transition-colors"
-                >
-                  {opt.label}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3 mt-auto pt-10">
-            <a 
-              href="https://app.forensicbypriyanshi.com/login" 
-              className="w-full text-center text-white/80 hover:text-white font-bold py-3.5 rounded-full border border-white/10 bg-white/5 text-sm transition-all"
-            >
-              Log in
-            </a>
-            <a 
-              href="https://app.forensicbypriyanshi.com/signup" 
-              className="w-full text-center bg-gradient-to-r from-[#F59F59] to-[#E8BCB9] text-[#1D1A39] font-bold py-3.5 rounded-full text-sm shadow-[0_4px_20px_rgba(245,159,89,0.25)] transition-all"
-            >
-              Sign up
-            </a>
-          </div>
-        </div>
-      )}
+      {/* Overlay to darken background when mobile menu is open */}
+      <div 
+        className={`md:hidden fixed inset-0 bg-navy/80 backdrop-blur-sm z-30 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
     </div>
   );
 }

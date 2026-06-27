@@ -9,6 +9,34 @@ import LandingPageClient from './LandingPageClient';
 // Revalidate every hour as fallback — admin changes trigger on-demand revalidation instantly
 export const revalidate = 3600;
 
+async function fetchYouTubeLatestVideos() {
+  try {
+    const res = await fetch('https://www.youtube.com/feeds/videos.xml?channel_id=UChEEVWdMA0N0XUqBad-OCkA', {
+      next: { revalidate: 3600 }
+    });
+    const xml = await res.text();
+    const videos = [];
+    const entries = xml.split('<entry>').slice(1);
+    for (const entry of entries.slice(0, 10)) {
+      const titleMatch = entry.match(/<title>(.*?)<\/title>/);
+      const linkMatch = entry.match(/<link rel="alternate" href="(.*?)"\/>/);
+      const idMatch = entry.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
+      
+      if (titleMatch && linkMatch && idMatch) {
+        videos.push({
+          title: titleMatch[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'"),
+          url: linkMatch[1],
+          thumbnail: `https://img.youtube.com/vi/${idMatch[1]}/maxresdefault.jpg`
+        });
+      }
+    }
+    return videos;
+  } catch (error) {
+    console.error('Failed to fetch YouTube latest videos:', error);
+    return [];
+  }
+}
+
 export default async function LandingPage() {
   // Fetch initial data for all components
   let courses: any[] = [];
@@ -19,10 +47,11 @@ export default async function LandingPage() {
   let faqs: any[] = [];
   let blogs: any[] = [];
   let landingPageData: any = null;
+  let youtubeVideos: any[] = [];
 
   try {
     // Parallel fetching for performance
-    const [coursesSnap, podcastsSnap, testsSnap, materialsSnap, testimonialsSnap, faqsSnap, landingSnap, blogsSnap] = await Promise.all([
+    const [coursesSnap, podcastsSnap, testsSnap, materialsSnap, testimonialsSnap, faqsSnap, landingSnap, blogsSnap, ytVideos] = await Promise.all([
       getDocs(collection(db, 'courses')),
       getDocs(collection(db, 'podcasts')),
       getDocs(collection(db, 'tests')),
@@ -30,7 +59,8 @@ export default async function LandingPage() {
       getDocs(collection(db, 'testimonials')),
       getDocs(collection(db, 'faqs')),
       getDoc(doc(db, 'landing_page', 'global')),
-      getDocs(query(collection(db, 'blogs'), where('published', '==', true)))
+      getDocs(query(collection(db, 'blogs'), where('published', '==', true))),
+      fetchYouTubeLatestVideos()
     ]);
 
     courses = coursesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -47,6 +77,8 @@ export default async function LandingPage() {
     if (landingSnap.exists()) {
       landingPageData = { id: landingSnap.id, ...landingSnap.data() };
     }
+    
+    youtubeVideos = ytVideos;
   } catch (error) {
     console.error("Error fetching data for landing page:", error);
   }
@@ -88,6 +120,7 @@ export default async function LandingPage() {
         initialFaqs={faqs}
         initialBlogs={blogs}
         landingPageData={landingPageData}
+        latestYouTubeVideos={youtubeVideos}
       />
     </>
   );

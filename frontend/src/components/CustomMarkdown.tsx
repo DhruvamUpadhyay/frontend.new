@@ -36,6 +36,18 @@ export function CustomMarkdown({ content }: { content: string }) {
     safeText = safeText.replace(/\*([^*]+)\*/g, '<em class="italic text-[#e8bcb9]">$1</em>');
     safeText = safeText.replace(/_([^_]+)_/g, '<em class="italic text-[#e8bcb9]">$1</em>');
 
+    // Images: ![alt](url)
+    safeText = safeText.replace(
+      /!\[([^\]]*)\]\(([^)]+)\)/g,
+      (_: string, alt: string, url: string) => {
+        const trimmedUrl = url.trim();
+        const isSafe = /^(https?:\/\/|\/)/.test(trimmedUrl);
+        const safeUrl = isSafe ? trimmedUrl : '';
+        if (!safeUrl) return '';
+        return `<span class="my-10 w-full rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 bg-black/20 flex justify-center"><img src="${safeUrl}" alt="${alt}" class="w-full h-auto object-cover max-h-[500px]" loading="lazy" /></span>`;
+      }
+    );
+
     // Links: [text](url) — V2 FIX: sanitize javascript: and other dangerous protocols
     safeText = safeText.replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,

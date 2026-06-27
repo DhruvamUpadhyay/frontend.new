@@ -39,16 +39,18 @@ export function middleware(request: NextRequest) {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://embed.tawk.to https://cdn.tawk.to",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://embed.tawk.to https://cdn.tawk.to https://browser.sentry-cdn.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to https://cdn.tawk.to",
       "font-src 'self' https://fonts.gstatic.com https://embed.tawk.to https://cdn.tawk.to",
       "img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://img.youtube.com https://*.googleusercontent.com https://embed.tawk.to https://cdn.tawk.to https://randomuser.me",
       "media-src 'self' https://res.cloudinary.com",
-      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://firestore.googleapis.com https://identitytoolkit.googleapis.com wss://*.tawk.to https://va.tawk.to https://embed.tawk.to",
+      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://firestore.googleapis.com https://identitytoolkit.googleapis.com wss://*.tawk.to https://va.tawk.to https://embed.tawk.to https://*.ingest.sentry.io https://*.sentry.io",
       "frame-src 'self' https://www.youtube.com https://*.tawk.to",
+      "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "upgrade-insecure-requests",
     ].join('; ')
   );
 
