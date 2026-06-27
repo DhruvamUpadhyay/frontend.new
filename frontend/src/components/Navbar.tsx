@@ -70,10 +70,11 @@ export function Navbar({ navData }: { navData?: any }) {
   ];
 
   return (
-    <div className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-in-out flex justify-center ${
-      isScrolled ? 'top-4 px-4' : 'top-0 px-0'
-    }`}>
-      <nav className={`transition-all duration-300 relative z-50 ${
+    <>
+      <div className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-in-out flex justify-center ${
+        isScrolled ? 'top-4 px-4' : 'top-0 px-0'
+      }`}>
+        <nav className={`transition-all duration-300 relative z-50 ${
         isScrolled 
           ? 'w-full lg:w-auto py-3 px-4 sm:px-6 lg:px-8 bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] rounded-[2rem] lg:rounded-full border border-white/20' 
           : 'w-full max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 bg-transparent'
@@ -144,60 +145,62 @@ export function Navbar({ navData }: { navData?: any }) {
             </a>
           </div>
 
-          {/* Mobile Menu Dropdown */}
-          <div className={`lg:hidden fixed inset-0 top-0 pt-24 bg-navy z-40 transition-all duration-300 ease-in-out flex flex-col ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
-            <div className="flex-1 overflow-y-auto px-6 pb-24">
-              <div className="flex flex-col gap-6">
-                {mainLinks.map((link: any, i: number) => (
-                  <a 
-                    key={i} 
-                    href={link.url} 
-                    className="text-2xl font-display font-bold text-white border-b border-plum/30 pb-4"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                ))}
-                
-                <div className="pt-2">
-                  <span className="text-sm font-bold text-white mb-4 block uppercase tracking-wider">More Resources</span>
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-2">
-                    {moreOptions.map((opt: any, i: number) => (
-                      opt.url.startsWith('/') ? 
-                      <Link key={i} href={opt.url} className="text-lg text-white/80 font-sans" onClick={() => setIsMobileMenuOpen(false)}>{opt.label}</Link>
-                      :
-                      <a key={i} href={opt.url} className="text-lg text-white/80 font-sans" onClick={() => setIsMobileMenuOpen(false)}>{opt.label}</a>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-4 mt-8 pt-8 border-t border-plum/30">
-                  <a 
-                    href="https://app.forensicbypriyanshi.com/login" 
-                    className="w-full py-4 text-center text-white border border-white/50 rounded-xl font-bold font-sans text-lg hover:bg-white/10 transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Log in
-                  </a>
-                  <a 
-                    href="https://app.forensicbypriyanshi.com/signup" 
-                    className="w-full py-4 text-center bg-amber text-navy rounded-xl font-bold font-display text-lg shadow-lg"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Sign up
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </nav>
+      </div>
 
       {/* Overlay to darken background when mobile menu is open */}
       <div 
         className={`lg:hidden fixed inset-0 bg-navy/80 backdrop-blur-sm z-30 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsMobileMenuOpen(false)}
       />
-    </div>
+
+      {/* Mobile Menu Dropdown */}
+      <div className={`lg:hidden fixed inset-0 top-0 pt-24 bg-navy z-40 transition-all duration-300 ease-in-out flex flex-col ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
+        <div className="flex-1 overflow-y-auto px-6 pb-24">
+          <div className="flex flex-col gap-6">
+            {mainLinks.map((link: any, i: number) => (
+              <a 
+                key={i} 
+                href={link.url} 
+                className="text-2xl font-display font-bold text-white border-b border-plum/30 pb-4"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.label}
+              </a>
+            ))}
+            
+            <div className="pt-2">
+              <span className="text-sm font-bold text-white mb-4 block uppercase tracking-wider">More Resources</span>
+              <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                {moreOptions.map((opt: any, i: number) => (
+                  opt.url.startsWith('/') ? 
+                  <Link key={i} href={opt.url} className="text-lg text-white/80 font-sans" onClick={() => setIsMobileMenuOpen(false)}>{opt.label}</Link>
+                  :
+                  <a key={i} href={opt.url} className="text-lg text-white/80 font-sans" onClick={() => setIsMobileMenuOpen(false)}>{opt.label}</a>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 mt-8 pt-8 border-t border-plum/30">
+              <a 
+                href="https://app.forensicbypriyanshi.com/login" 
+                className="w-full py-4 text-center text-white border border-white/50 rounded-xl font-bold font-sans text-lg hover:bg-white/10 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Log in
+              </a>
+              <a 
+                href="https://app.forensicbypriyanshi.com/signup" 
+                className="w-full py-4 text-center bg-amber text-navy rounded-xl font-bold font-display text-lg shadow-lg"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Sign up
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
