@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { apiClient } from '@/api/client';
+import { auth } from '@/config/firebase';
 import {
   ScrollText, Search, Filter, Shield, LogIn, Database,
   AlertTriangle, ChevronDown, ChevronUp, Loader2, Clock,
@@ -79,8 +80,17 @@ export default function AuditLogsPage() {
   const fetchLogs = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const data = await apiClient.get('system_logs', 500);
-      setLogs(data as LogEntry[]);
+      const data = (await apiClient.get('system_logs', 500)) as LogEntry[];
+      
+      // Filter out Developer logs if the current user is not the Developer
+      const currentUserEmail = auth.currentUser?.email;
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'developer@forensicbypriyanshi.com';
+      
+      const visibleLogs = currentUserEmail === adminEmail 
+        ? data 
+        : data.filter(log => log.adminEmail !== adminEmail);
+        
+      setLogs(visibleLogs);
       setLastRefreshed(new Date());
     } catch (err) {
       console.error('Failed to load audit logs:', err);

@@ -24,7 +24,7 @@ export default function AdminVisualEditor() {
     stats3Label: "Students Taught",
     features: [],
     sectionOrder: [
-      'hero', 'features', 'guidance', 'courses', 'tests', 'materials', 'freeResources', 'podcasts', 'youtube', 'testimonials', 'blogs', 'faq'
+      'hero', 'guidance', 'courses', 'materials', 'tests', 'latestVideos', 'youtube', 'freeResources', 'blogs', 'testimonials', 'podcasts', 'about', 'faq', 'ctaFooter'
     ]
   });
   const [courses, setCourses] = useState<any[]>([]);
@@ -68,7 +68,7 @@ export default function AdminVisualEditor() {
     ]
   });
 
-  const [mediaSelectorTarget, setMediaSelectorTarget] = useState<{ type: 'feature' | 'testimonial'; index: number } | null>(null);
+  const [mediaSelectorTarget, setMediaSelectorTarget] = useState<{ type: 'feature' | 'testimonial' | 'modal_input'; index?: number; key?: string } | null>(null);
 
   // Theme settings
   const [themeData, setThemeData] = useState<any>({
@@ -112,39 +112,36 @@ export default function AdminVisualEditor() {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [
-        landingSnap,
-        coursesSnap,
-        testsSnap,
-        materialsSnap,
-        podcastsSnap,
-        testimonialsSnap,
-        faqsSnap,
-        newsletterSnap,
-        blogsSnap,
-        themeSnap,
-        navigationSnap
-      ] = await Promise.all([
-        apiClient.get('landing_page'),
-        apiClient.get('courses'),
-        apiClient.get('tests'),
-        apiClient.get('materials'),
-        apiClient.get('podcasts'),
-        apiClient.get('testimonials'),
-        apiClient.get('faqs'),
-        apiClient.get('newsletter'),
-        apiClient.get('blogs'),
-        apiClient.get('settings'),
-        apiClient.get('navigation')
-      ]);
+      const safeGet = async (collection: string) => {
+        try { return await apiClient.get(collection); }
+        catch (e) { console.warn(`Failed to fetch ${collection}:`, e); return []; }
+      };
+
+      const landingSnap = await safeGet('landing_page');
+      const coursesSnap = await safeGet('courses');
+      const testsSnap = await safeGet('tests');
+      const materialsSnap = await safeGet('materials');
+      const podcastsSnap = await safeGet('podcasts');
+      const testimonialsSnap = await safeGet('testimonials');
+      const faqsSnap = await safeGet('faqs');
+      const newsletterSnap = await safeGet('newsletter');
+      const blogsSnap = await safeGet('blogs');
+      const themeSnap = await safeGet('settings');
+      const navigationSnap = await safeGet('navigation');
 
       const globalDoc = landingSnap.find((d: any) => d.id === 'global');
       if (globalDoc) {
+        const defaultOrder = [
+          'hero', 'guidance', 'courses', 'materials', 'tests', 'latestVideos', 'youtube', 'freeResources', 'blogs', 'testimonials', 'podcasts', 'about', 'faq', 'ctaFooter'
+        ];
+        let finalOrder = globalDoc.sectionOrder || defaultOrder;
+        if (!finalOrder.includes('latestVideos') || !finalOrder.includes('about') || !finalOrder.includes('ctaFooter')) {
+          finalOrder = defaultOrder;
+        }
+
         setLandingData({
           ...globalDoc,
-          sectionOrder: globalDoc.sectionOrder || [
-            'hero', 'features', 'guidance', 'courses', 'tests', 'materials', 'freeResources', 'podcasts', 'youtube', 'testimonials', 'blogs', 'faq'
-          ]
+          sectionOrder: finalOrder
         });
       }
 
@@ -205,9 +202,7 @@ export default function AdminVisualEditor() {
 
   const handleMoveSection = async (secName: string, direction: 'up' | 'down', e: React.MouseEvent) => {
     e.stopPropagation(); // Avoid triggering visual editor drawers
-    const sections = [...(landingData.sectionOrder || [
-      'hero', 'features', 'guidance', 'courses', 'tests', 'materials', 'freeResources', 'podcasts', 'youtube', 'testimonials', 'blogs', 'faq'
-    ])];
+    const sections = [...(landingData.sectionOrder || [ 'hero', 'guidance', 'courses', 'materials', 'tests', 'latestVideos', 'youtube', 'freeResources', 'blogs', 'testimonials', 'podcasts', 'about', 'faq', 'ctaFooter' ])];
     const index = sections.indexOf(secName);
     if (index === -1) return;
     
@@ -237,9 +232,7 @@ export default function AdminVisualEditor() {
       description: `Are you sure you want to remove the ${secName} section from the homepage?`,
       inputs: [],
       onConfirm: async () => {
-        const sections = (landingData.sectionOrder || [
-          'hero', 'features', 'guidance', 'courses', 'tests', 'materials', 'freeResources', 'podcasts', 'youtube', 'testimonials', 'blogs', 'faq'
-        ]).filter((s: string) => s !== secName);
+        const sections = (landingData.sectionOrder || [ 'hero', 'guidance', 'courses', 'materials', 'tests', 'latestVideos', 'youtube', 'freeResources', 'blogs', 'testimonials', 'podcasts', 'about', 'faq', 'ctaFooter' ]).filter((s: string) => s !== secName);
         
         const updated = { ...landingData, sectionOrder: sections };
         setLandingData(updated);
@@ -262,8 +255,9 @@ export default function AdminVisualEditor() {
       setDrawerData({
         guidanceTitle: landingData.guidanceTitle || "Get One-on-One Career Guidance Directly from Priyanshi ma'am",
         guidanceSubtitle: landingData.guidanceSubtitle || "Get clarity on anything & everything that you have in your head related to Forensic Science.",
-        guidancePrice: landingData.guidancePrice || "₹999",
-        guidanceUrl: landingData.guidanceUrl || "/student/counselling"
+        guidancePrice: landingData.guidancePrice || "₹1,999",
+        guidanceUrl: landingData.guidanceUrl || "/student/counselling",
+        guidanceImage: landingData.guidanceImage || "/counselling.jpg"
       });
     } else if (drawerName === 'courses') {
       setDrawerData({ list: [...courses] });
@@ -284,7 +278,20 @@ export default function AdminVisualEditor() {
         mainLinks: [...(navData.mainLinks || [])],
         dropdownLinks: [...(navData.dropdownLinks || [])]
       });
-    } else if (drawerName === 'footer') {
+    } else if (drawerName === 'about') {
+        setDrawerData({
+          aboutTitle: landingData.aboutTitle,
+          aboutDescription: landingData.aboutDescription,
+          aboutImage: landingData.aboutImage
+        });
+      } else if (drawerName === 'ctaFooter') {
+        setDrawerData({
+          ctaTitle: landingData.ctaTitle,
+          ctaSubtitle: landingData.ctaSubtitle,
+          ctaButtonText: landingData.ctaButtonText,
+          ctaButtonLink: landingData.ctaButtonLink
+        });
+      } else if (drawerName === 'footer') {
       setDrawerData({
         exploreLinks: [...(footerData.exploreLinks || [])],
         companyLinks: [...(footerData.companyLinks || [])]
@@ -333,7 +340,15 @@ export default function AdminVisualEditor() {
       } else if (activeDrawer === 'navbar') {
         await apiClient.put('navigation', 'main', drawerData);
         setNavData(drawerData);
-      } else if (activeDrawer === 'footer') {
+      } else if (activeDrawer === 'about') {
+          const merged = { ...landingData, ...drawerData };
+          await apiClient.put('landing_page', 'global', merged);
+          setLandingData(merged);
+        } else if (activeDrawer === 'ctaFooter') {
+          const merged = { ...landingData, ...drawerData };
+          await apiClient.put('landing_page', 'global', merged);
+          setLandingData(merged);
+        } else if (activeDrawer === 'footer') {
         await apiClient.put('navigation', 'footer', drawerData);
         setFooterData(drawerData);
       } else if (activeDrawer === 'aboutUs') {
@@ -380,12 +395,8 @@ export default function AdminVisualEditor() {
           <div className="flex items-center gap-3">
             {/* Add Section Dropdown Selector */}
             {(() => {
-              const currentOrder = landingData.sectionOrder || [
-                'hero', 'features', 'guidance', 'courses', 'tests', 'materials', 'freeResources', 'podcasts', 'youtube', 'testimonials', 'blogs', 'faq'
-              ];
-              const ALL_SECTIONS = [
-                'hero', 'features', 'guidance', 'courses', 'tests', 'materials', 'freeResources', 'podcasts', 'youtube', 'testimonials', 'blogs', 'faq'
-              ];
+              const currentOrder = landingData.sectionOrder || [ 'hero', 'guidance', 'courses', 'materials', 'tests', 'latestVideos', 'youtube', 'freeResources', 'blogs', 'testimonials', 'podcasts', 'about', 'faq', 'ctaFooter' ];
+              const ALL_SECTIONS = [ 'hero', 'guidance', 'courses', 'materials', 'tests', 'latestVideos', 'youtube', 'freeResources', 'blogs', 'testimonials', 'podcasts', 'about', 'faq', 'ctaFooter' ];
               const unusedSections = ALL_SECTIONS.filter(s => !currentOrder.includes(s));
               
               if (unusedSections.length === 0) return null;
@@ -486,9 +497,7 @@ export default function AdminVisualEditor() {
         </div>
 
         {/* DYNAMIC SECTIONS LOOP */}
-        {(landingData.sectionOrder || [
-          'hero', 'features', 'guidance', 'courses', 'tests', 'materials', 'freeResources', 'podcasts', 'youtube', 'testimonials', 'blogs', 'faq'
-        ]).map((secName: string) => {
+        {(landingData.sectionOrder || [ 'hero', 'guidance', 'courses', 'materials', 'tests', 'latestVideos', 'youtube', 'freeResources', 'blogs', 'testimonials', 'podcasts', 'about', 'faq', 'ctaFooter' ]).map((secName: string) => {
           switch (secName) {
             case 'hero':
               return (
@@ -894,10 +903,71 @@ export default function AdminVisualEditor() {
                   </div>
                 </div>
               );
-            default:
-              return null;
-          }
-        })}
+                        case 'latestVideos':
+              return (
+                <div 
+                  key="latestVideos"
+                  className="relative group border-b border-white/5 hover:border-dashed hover:border-yellow-400 cursor-pointer py-20 px-6 bg-[#1D1A39]/60 transition-all text-center"
+                >
+                  <div className="absolute inset-0 bg-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                  <div className="absolute top-4 right-4 bg-yellow-500 text-[#1D1A39] text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 flex items-center gap-1">
+                    <button onClick={(e) => handleMoveSection('latestVideos', 'up', e)} className="p-1 hover:bg-black/15 rounded mr-0.5" title="Move Up"><ArrowUp className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => handleMoveSection('latestVideos', 'down', e)} className="p-1 hover:bg-black/15 rounded mr-0.5" title="Move Down"><ArrowDown className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => handleDeleteSection('latestVideos', e)} className="p-1 hover:bg-black/15 text-red-700 rounded mr-1" title="Delete Section"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <span>(Auto-Fetched from YouTube)</span>
+                  </div>
+                  <h2 className="text-3xl font-bold font-display text-white mb-2">Latest YouTube Videos</h2>
+                  <p className="text-white/60 text-sm font-semibold max-w-lg mx-auto">Displays the 10 most recent videos directly from the channel.</p>
+                </div>
+              );
+            case 'about':
+              return (
+                <div 
+                  key="about"
+                  onClick={() => handleOpenDrawer('about')}
+                  className="relative group border-b border-white/5 hover:border-dashed hover:border-yellow-400 cursor-pointer py-20 px-6 bg-white transition-all text-left"
+                >
+                  <div className="absolute inset-0 bg-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                  <div className="absolute top-4 right-4 bg-yellow-500 text-[#1D1A39] text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 flex items-center gap-1">
+                    <button onClick={(e) => handleMoveSection('about', 'up', e)} className="p-1 hover:bg-black/15 rounded mr-0.5" title="Move Up"><ArrowUp className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => handleMoveSection('about', 'down', e)} className="p-1 hover:bg-black/15 rounded mr-0.5" title="Move Down"><ArrowDown className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => handleDeleteSection('about', e)} className="p-1 hover:bg-black/15 text-red-700 rounded mr-1" title="Delete Section"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <Edit3 className="w-3 h-3" /> Edit About Section
+                  </div>
+                  <div className="max-w-4xl mx-auto flex items-center gap-12">
+                    <div className="w-48 h-64 bg-gray-200 rounded-3xl overflow-hidden shrink-0">
+                      {landingData.aboutImage ? <img src={landingData.aboutImage} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400">Image</div>}
+                    </div>
+                    <div>
+                      <h2 className="text-4xl font-bold font-display text-[#1D1A39] mb-4">{landingData.aboutTitle || 'Meet Priyanshi Jain'}</h2>
+                      <p className="text-gray-600 font-semibold line-clamp-3">{landingData.aboutDescription || 'Priyanshi Jain is India\'s leading Forensic Science educator...'}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            case 'ctaFooter':
+              return (
+                <div 
+                  key="ctaFooter"
+                  onClick={() => handleOpenDrawer('ctaFooter')}
+                  className="relative group border-b border-white/5 hover:border-dashed hover:border-yellow-400 cursor-pointer py-24 px-6 bg-gradient-to-br from-[#1D1A39] to-purple-900 transition-all text-center"
+                >
+                  <div className="absolute inset-0 bg-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                  <div className="absolute top-4 right-4 bg-yellow-500 text-[#1D1A39] text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 flex items-center gap-1">
+                    <button onClick={(e) => handleMoveSection('ctaFooter', 'up', e)} className="p-1 hover:bg-black/15 rounded mr-0.5" title="Move Up"><ArrowUp className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => handleMoveSection('ctaFooter', 'down', e)} className="p-1 hover:bg-black/15 rounded mr-0.5" title="Move Down"><ArrowDown className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => handleDeleteSection('ctaFooter', e)} className="p-1 hover:bg-black/15 text-red-700 rounded mr-1" title="Delete Section"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <Edit3 className="w-3 h-3" /> Edit CTA Footer
+                  </div>
+                  <h2 className="text-5xl font-bold font-display text-white mb-6">{landingData.ctaTitle || 'Ready to Crack Your Exams?'}</h2>
+                  <p className="text-[#F59F59] text-xl font-medium mb-8">{landingData.ctaSubtitle || 'Join India\'s fastest-growing forensic science community.'}</p>
+                  <div className="inline-block bg-[#F59F59] text-white px-8 py-4 rounded-2xl font-bold">{landingData.ctaButtonText || 'Start Learning for Free'}</div>
+                </div>
+              );
+              default:
+                return null;
+            }
+          })}
 
         {/* MOCK FOOTER */}
         <div 
@@ -1204,6 +1274,58 @@ export default function AdminVisualEditor() {
                       <input type="text" value={drawerData.guidanceUrl} onChange={e => setDrawerData({ ...drawerData, guidanceUrl: e.target.value })} className="w-full bg-[#fafafa] border rounded-xl p-2 text-sm" />
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-bold text-[#1D1A39] mb-1">Poster Image URL</label>
+                    <div className="flex gap-2">
+                      <input type="text" value={drawerData.guidanceImage || ''} onChange={e => setDrawerData({ ...drawerData, guidanceImage: e.target.value })} placeholder="https://..." className="flex-grow bg-[#fafafa] border rounded-xl p-2 text-sm" />
+                      <label className="shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                        <ImageIcon className="w-4 h-4" /> Upload
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              e.target.parentElement!.style.opacity = '0.5';
+                              const { signature, timestamp, cloudName, apiKey } = await apiClient.getCloudinarySignature('fbp_assets');
+                              const formData = new FormData();
+                              formData.append('file', file);
+                              formData.append('api_key', apiKey);
+                              formData.append('timestamp', timestamp.toString());
+                              formData.append('signature', signature);
+                              formData.append('folder', 'fbp_assets');
+                              
+                              const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                                method: 'POST',
+                                body: formData,
+                              });
+                              const uploadData = await uploadRes.json();
+                              if (uploadData.error) throw new Error(uploadData.error.message);
+                              
+                              await apiClient.post('media', {
+                                url: uploadData.secure_url,
+                                publicId: uploadData.public_id,
+                                filename: file.name,
+                                createdAt: new Date().toISOString()
+                              });
+                              
+                              setDrawerData((prev: any) => ({ 
+                                ...prev, 
+                                guidanceImage: uploadData.secure_url.replace(/^https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload/, '/media') 
+                              }));
+                            } catch (err) {
+                              alert("Upload failed. See console.");
+                              console.error(err);
+                            } finally {
+                              e.target.parentElement!.style.opacity = '1';
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1215,17 +1337,19 @@ export default function AdminVisualEditor() {
                     <button
                       type="button"
                       onClick={() => {
-                        setModalInputValues({ title: '', price: '₹4,999' });
+                        setModalInputValues({ title: '', price: '₹4,999', image: '', details: '' });
                         setModalConfig({
                           type: 'prompt',
                           title: 'Add New Course',
                           inputs: [
                             { key: 'title', label: 'Course Title', placeholder: 'Enter Course Title' },
-                            { key: 'price', label: 'Price Tag', placeholder: 'Enter price tag (e.g. ₹4,999)' }
+                            { key: 'price', label: 'Price Tag', placeholder: 'Enter price tag (e.g. ₹4,999)' },
+                            { key: 'image', label: 'Poster Image URL', placeholder: 'https://...', type: 'image' },
+                            { key: 'details', label: 'Course Details', placeholder: 'Curriculum info...', type: 'textarea' }
                           ],
                           onConfirm: async (values) => {
                             if (!values.title) return;
-                            const course = await apiClient.post('courses', { title: values.title, price: values.price || 'Free' });
+                            const course = await apiClient.post('courses', { title: values.title, price: values.price || 'Free', image: values.image || '', details: values.details || '' });
                             setDrawerData({ list: [...drawerData.list, course] });
                           }
                         });
@@ -1239,25 +1363,34 @@ export default function AdminVisualEditor() {
                   <div className="space-y-4">
                     {drawerData.list.map((c: any, index: number) => (
                       <div key={c.id || index} className="p-4 border rounded-xl bg-gray-50 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-[#1D1A39]">{c.title}</h4>
-                          <p className="text-xs text-gray-500 font-semibold mt-1">Price: {c.price}</p>
+                        <div className="flex items-center gap-3">
+                          {c.image && (
+                            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border bg-white">
+                              <img src={c.image} alt={c.title} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-bold text-[#1D1A39]">{c.title}</h4>
+                            <p className="text-xs text-gray-500 font-semibold mt-1">Price: {c.price}</p>
+                          </div>
                         </div>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => {
-                              setModalInputValues({ title: c.title, price: c.price });
+                              setModalInputValues({ title: c.title, price: c.price, image: c.image || '', details: c.details || '' });
                               setModalConfig({
                                 type: 'prompt',
                                 title: 'Update Course',
                                 inputs: [
                                   { key: 'title', label: 'Course Title', placeholder: 'Update Course Title' },
-                                  { key: 'price', label: 'Price Tag', placeholder: 'Update Course Price' }
+                                  { key: 'price', label: 'Price Tag', placeholder: 'Update Course Price' },
+                                  { key: 'image', label: 'Poster Image URL', placeholder: 'https://...', type: 'image' },
+                                  { key: 'details', label: 'Course Details', placeholder: 'Curriculum info...', type: 'textarea' }
                                 ],
                                 onConfirm: async (values) => {
                                   if (!values.title) return;
-                                  const updated = await apiClient.put('courses', c.id, { ...c, title: values.title, price: values.price });
+                                  const updated = await apiClient.put('courses', c.id, { ...c, title: values.title, price: values.price, image: values.image || '', details: values.details || '' });
                                   const updatedList = [...drawerData.list];
                                   updatedList[index] = updated;
                                   setDrawerData({ list: updatedList });
@@ -2044,6 +2177,91 @@ export default function AdminVisualEditor() {
                 </div>
               )}
 
+                            {/* ABOUT DRAWER */}
+              {activeDrawer === 'about' && drawerData && (
+                <div className="space-y-4">
+                  <h3 className="font-bold text-[#1D1A39] border-b pb-2">About Priyanshi Section</h3>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Heading</label>
+                    <input 
+                      type="text" 
+                      value={drawerData.aboutTitle || ''} 
+                      onChange={(e) => setDrawerData({...drawerData, aboutTitle: e.target.value})}
+                      className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59F59]"
+                      placeholder="e.g., Meet Priyanshi Jain"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Description Paragraph</label>
+                    <textarea 
+                      value={drawerData.aboutDescription || ''} 
+                      onChange={(e) => setDrawerData({...drawerData, aboutDescription: e.target.value})}
+                      className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59F59] h-32"
+                      placeholder="Write the bio here..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Profile Image URL</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={drawerData.aboutImage || ''} 
+                        onChange={(e) => setDrawerData({...drawerData, aboutImage: e.target.value})}
+                        className="flex-1 border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59F59]"
+                        placeholder="e.g., /priyanshi.jpg"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* CTA FOOTER DRAWER */}
+              {activeDrawer === 'ctaFooter' && drawerData && (
+                <div className="space-y-4">
+                  <h3 className="font-bold text-[#1D1A39] border-b pb-2">CTA Footer Section</h3>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Main Heading</label>
+                    <input 
+                      type="text" 
+                      value={drawerData.ctaTitle || ''} 
+                      onChange={(e) => setDrawerData({...drawerData, ctaTitle: e.target.value})}
+                      className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59F59]"
+                      placeholder="e.g., Ready to Crack Your Exams?"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Subheading</label>
+                    <input 
+                      type="text" 
+                      value={drawerData.ctaSubtitle || ''} 
+                      onChange={(e) => setDrawerData({...drawerData, ctaSubtitle: e.target.value})}
+                      className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59F59]"
+                      placeholder="e.g., Join India's fastest-growing forensic community."
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Button Text</label>
+                      <input 
+                        type="text" 
+                        value={drawerData.ctaButtonText || ''} 
+                        onChange={(e) => setDrawerData({...drawerData, ctaButtonText: e.target.value})}
+                        className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59F59]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Button Link</label>
+                      <input 
+                        type="text" 
+                        value={drawerData.ctaButtonLink || ''} 
+                        onChange={(e) => setDrawerData({...drawerData, ctaButtonLink: e.target.value})}
+                        className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59F59]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* FOOTER DRAWER */}
               {activeDrawer === 'footer' && drawerData && (
                 <div className="space-y-6">
@@ -2396,7 +2614,7 @@ export default function AdminVisualEditor() {
 
       {/* 5. MEDIA SELECTOR MODAL (OVERLAY ABOVE DRAWER) */}
       {showMediaSelector && mediaSelectorTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white rounded-2xl max-w-4xl w-full h-[80vh] flex flex-col shadow-2xl overflow-hidden">
             {/* Modal Header */}
             <div className="p-6 border-b flex justify-between items-center bg-gray-50">
@@ -2425,12 +2643,14 @@ export default function AdminVisualEditor() {
                       const proxyUrl = toProxyUrl(m.url);
                       if (mediaSelectorTarget.type === 'feature') {
                         const copy = [...drawerData.features];
-                        copy[mediaSelectorTarget.index].image = proxyUrl;
+                        copy[mediaSelectorTarget.index!].image = proxyUrl;
                         setDrawerData({ ...drawerData, features: copy });
                       } else if (mediaSelectorTarget.type === 'testimonial') {
                         const copy = [...drawerData.list];
-                        copy[mediaSelectorTarget.index].image = proxyUrl;
+                        copy[mediaSelectorTarget.index!].image = proxyUrl;
                         setDrawerData({ list: copy });
+                      } else if (mediaSelectorTarget.type === 'modal_input' && mediaSelectorTarget.key) {
+                        setModalInputValues(prev => ({ ...prev, [mediaSelectorTarget.key!]: proxyUrl }));
                       }
                       setShowMediaSelector(false);
                       setMediaSelectorTarget(null);
@@ -2489,14 +2709,84 @@ export default function AdminVisualEditor() {
               {modalConfig.type === 'prompt' && modalConfig.inputs.map((input) => (
                 <div key={input.key} className="space-y-1">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">{input.label}</label>
-                  <input
-                    type={input.type || 'text'}
-                    value={modalInputValues[input.key] || ''}
-                    onChange={(e) => setModalInputValues({ ...modalInputValues, [input.key]: e.target.value })}
-                    placeholder={input.placeholder}
-                    className="w-full bg-[#fafafa] border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#F59F59]/20 focus:border-[#F59F59]"
-                    autoFocus={input.key === modalConfig.inputs[0].key}
-                  />
+                  {input.type === 'textarea' ? (
+                    <textarea
+                      value={modalInputValues[input.key] || ''}
+                      onChange={(e) => setModalInputValues({ ...modalInputValues, [input.key]: e.target.value })}
+                      placeholder={input.placeholder}
+                      className="w-full bg-[#fafafa] border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#F59F59]/20 focus:border-[#F59F59] min-h-[100px] resize-y"
+                      autoFocus={input.key === modalConfig.inputs[0].key}
+                    />
+                  ) : input.type === 'image' ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={modalInputValues[input.key] || ''}
+                        onChange={(e) => setModalInputValues({ ...modalInputValues, [input.key]: e.target.value })}
+                        placeholder={input.placeholder}
+                        className="flex-grow bg-[#fafafa] border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#F59F59]/20 focus:border-[#F59F59]"
+                      />
+                      <label className="shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                        <ImageIcon className="w-4 h-4" /> Upload
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              // Optional: you can show a loading indicator here by setting some state, 
+                              // but since it's a small image upload it's usually very fast.
+                              e.target.parentElement!.style.opacity = '0.5';
+                              const { signature, timestamp, cloudName, apiKey } = await apiClient.getCloudinarySignature('fbp_assets');
+                              const formData = new FormData();
+                              formData.append('file', file);
+                              formData.append('api_key', apiKey);
+                              formData.append('timestamp', timestamp.toString());
+                              formData.append('signature', signature);
+                              formData.append('folder', 'fbp_assets');
+                              
+                              const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                                method: 'POST',
+                                body: formData,
+                              });
+                              const uploadData = await uploadRes.json();
+                              if (uploadData.error) throw new Error(uploadData.error.message);
+                              
+                              // Save to media library as well
+                              await apiClient.post('media', {
+                                url: uploadData.secure_url,
+                                publicId: uploadData.public_id,
+                                filename: file.name,
+                                createdAt: new Date().toISOString()
+                              });
+                              
+                              // Auto fill the input with proxy URL
+                              setModalInputValues(prev => ({ 
+                                ...prev, 
+                                [input.key]: uploadData.secure_url.replace(/^https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload/, '/media') 
+                              }));
+                            } catch (err) {
+                              alert("Upload failed. See console.");
+                              console.error(err);
+                            } finally {
+                              e.target.parentElement!.style.opacity = '1';
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <input
+                      type={input.type || 'text'}
+                      value={modalInputValues[input.key] || ''}
+                      onChange={(e) => setModalInputValues({ ...modalInputValues, [input.key]: e.target.value })}
+                      placeholder={input.placeholder}
+                      className="w-full bg-[#fafafa] border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#F59F59]/20 focus:border-[#F59F59]"
+                      autoFocus={input.key === modalConfig.inputs[0].key}
+                    />
+                  )}
                 </div>
               ))}
             </div>

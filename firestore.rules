@@ -34,19 +34,25 @@ service cloud.firestore {
                     && request.resource.data.email is string
                     && request.resource.data.email.size() < 255
                     && request.resource.data.timestamp is string;
-      allow read, update, delete: if false;
+      allow read, delete: if isAdmin();
+      allow update: if false;
     }
 
     // ──────────────────────────────────────────────────────────────────────
     // Helper function to check if the user is an authorized admin.
-    // Always permits the primary admin phone number, or checks the /admins collection.
+    // Always permits the primary admin phone number/email, or checks the /admins collection.
     // ──────────────────────────────────────────────────────────────────────
     function isAdmin() {
-      return request.auth != null && 
-             request.auth.token.keys().contains('phone_number') && (
-               request.auth.token.phone_number == "+919274173384" ||
-               exists(/databases/$(database)/documents/admins/$(request.auth.token.phone_number))
-             );
+      return request.auth != null && (
+        (('email' in request.auth.token) && (
+          request.auth.token.email == "developer@forensicbypriyanshi.com" ||
+          exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+        )) ||
+        (('phone_number' in request.auth.token) && (
+          request.auth.token.phone_number == "+919274173384" ||
+          exists(/databases/$(database)/documents/admins/$(request.auth.token.phone_number))
+        ))
+      );
     }
 
     // ──────────────────────────────────────────────────────────────────────

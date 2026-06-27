@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from 'react';
-import { History, BookOpen, ChevronRight, Zap, Type, Palette, List, Code, Link2, Quote, Minus, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { History, BookOpen, ChevronRight, Zap, Type, Palette, List, Code, Link2, Quote, Minus, CheckCircle, AlertCircle, Info, ShieldAlert, Lock, ScrollText } from 'lucide-react';
 
-type TabType = 'releases' | 'guide';
+type TabType = 'releases' | 'guide' | 'vapt' | 'attacks' | 'logs';
 
 const BADGE_COLORS: Record<string, string> = {
   'Major Update': 'bg-amber-50 text-amber-700 border border-amber-200',
@@ -193,24 +193,51 @@ export default function SystemVersion() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl w-fit">
+      <div className="flex flex-wrap gap-2 p-1 bg-gray-100 rounded-2xl w-fit">
         <button
           onClick={() => setActiveTab('releases')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
             activeTab === 'releases' ? 'bg-white text-[#1D1A39] shadow-sm' : 'text-gray-500 hover:text-[#1D1A39]'
           }`}
         >
           <History className="w-4 h-4" />
-          Release History
+          Release Timeline
         </button>
         <button
           onClick={() => setActiveTab('guide')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
             activeTab === 'guide' ? 'bg-white text-[#1D1A39] shadow-sm' : 'text-gray-500 hover:text-[#1D1A39]'
           }`}
         >
           <BookOpen className="w-4 h-4" />
-          Page Creator Guide
+          User Manual Guide
+        </button>
+        <button
+          onClick={() => setActiveTab('vapt')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            activeTab === 'vapt' ? 'bg-white text-[#1D1A39] shadow-sm' : 'text-gray-500 hover:text-[#1D1A39]'
+          }`}
+        >
+          <ShieldAlert className="w-4 h-4" />
+          Security VAPT
+        </button>
+        <button
+          onClick={() => setActiveTab('attacks')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            activeTab === 'attacks' ? 'bg-white text-[#1D1A39] shadow-sm' : 'text-gray-500 hover:text-[#1D1A39]'
+          }`}
+        >
+          <Lock className="w-4 h-4" />
+          Threat Prevention
+        </button>
+        <button
+          onClick={() => setActiveTab('logs')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+            activeTab === 'logs' ? 'bg-white text-[#1D1A39] shadow-sm' : 'text-gray-500 hover:text-[#1D1A39]'
+          }`}
+        >
+          <ScrollText className="w-4 h-4" />
+          Audit Logs Security
         </button>
       </div>
 
@@ -402,6 +429,190 @@ export default function SystemVersion() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VAPT TAB */}
+      {activeTab === 'vapt' && (
+        <div className="space-y-6">
+          {/* Info Banner */}
+          <div className="bg-gradient-to-r from-[#1D1A39] to-[#451952] rounded-2xl p-6 text-white flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-[#F59F59]/20 border border-[#F59F59]/30 flex items-center justify-center flex-shrink-0">
+              <ShieldAlert className="w-5 h-5 text-[#F59F59]" />
+            </div>
+            <div>
+              <h2 className="font-bold text-xl font-display mb-1">Vulnerability Assessment & Penetration Testing (VAPT) Report</h2>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Details on security audits, identified vulnerabilities, and active patch statuses. The system is scanned and patched for high-risk exploits.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              {
+                title: "1. Weak Firestore Security Rules",
+                status: "Patched & Secure",
+                statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                description: "Previously, broad write permissions allowed database mutations from the browser without strict verification.",
+                remediation: "Deployed collection-specific validation rules restricting all document writes to verified Admin tokens using the isAdmin() helper."
+              },
+              {
+                title: "2. DOM-Based Cross-Site Scripting (XSS)",
+                status: "Patched & Secure",
+                statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                description: "Admins or editors could insert malicious script tags or 'javascript:' href payloads into the Page/Blog markdown content.",
+                remediation: "Integrated custom sanitization logic in the Markdown compiler to strip non-http/https protocols from links and escape unsafe HTML tags."
+              },
+              {
+                title: "3. Memory-Based Rate Limiter Bypass",
+                status: "Patched & Secure",
+                statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                description: "Volatile in-memory IP trackers reset on serverless function cold starts, allowing attackers to spam newsletter subscription routes.",
+                remediation: "Replaced in-memory tracking with a persistent Firestore collection rate limiter, securing routes across serverless restarts."
+              },
+              {
+                title: "4. Unprotected Cloudinary Upload Signatures",
+                status: "Patched & Secure",
+                statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                description: "Lack of authorization checks on Cloudinary signature endpoints allowed anyone to generate file upload tokens.",
+                remediation: "Restricted signature generation endpoints to authenticated administration sessions with role checks."
+              }
+            ].map((vuln, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-[#1D1A39]/10 shadow-sm p-6 space-y-3">
+                <div className="flex justify-between items-start gap-4">
+                  <h3 className="font-bold text-[#1D1A39] font-display">{vuln.title}</h3>
+                  <span className={`px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider rounded-full border ${vuln.statusColor}`}>
+                    {vuln.status}
+                  </span>
+                </div>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  <strong className="text-gray-700 font-bold block mb-1">Threat Context:</strong> {vuln.description}
+                </p>
+                <div className="bg-gray-50 p-4 rounded-xl text-xs text-gray-600 border border-gray-100">
+                  <strong className="text-[#1D1A39] font-bold block mb-1">Remediation Done:</strong>
+                  {vuln.remediation}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* THREAT PREVENTION TAB */}
+      {activeTab === 'attacks' && (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-[#1D1A39] to-[#451952] rounded-2xl p-6 text-white flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-[#F59F59]/20 border border-[#F59F59]/30 flex items-center justify-center flex-shrink-0">
+              <Lock className="w-5 h-5 text-[#F59F59]" />
+            </div>
+            <div>
+              <h2 className="font-bold text-xl font-display mb-1">Threat Protection & Security Architecture</h2>
+              <p className="text-white/70 text-sm leading-relaxed">
+                The platform is designed to actively protect against the most common web security attack vectors.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-[#1D1A39]/10 shadow-sm p-6 space-y-6">
+            <h3 className="font-bold text-lg text-[#1D1A39] font-display border-b border-gray-100 pb-3 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-emerald-500" /> Prevented Attack Vectors
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                {
+                  name: "XSS (Cross-Site Scripting)",
+                  desc: "Blocks attackers from injecting scripts. Prevented via React Virtual DOM rendering (automatic text escaping), custom markdown link protocol verification, and strict CSP (Content Security Policy) headers."
+                },
+                {
+                  name: "SQL & NoSQL Injection",
+                  desc: "Prevents query modifications to access private data. Prevented by using Firestore API parameters where inputs are handled as distinct data parameters, separating query definitions from raw database execution."
+                },
+                {
+                  name: "CSRF (Cross-Site Request Forgery)",
+                  desc: "Stops unauthorized sites from sending requests on behalf of logged-in users. Secured by stateless API tokens and SameSite cookie properties."
+                },
+                {
+                  name: "Bruteforce & DDoS Spamming",
+                  desc: "Defends authentication and submission routes against brute force attacks. Prevented by persistent Firestore-backed rate limiters tracking subscriber/login attempts per IP."
+                },
+                {
+                  name: "Session Hijacking",
+                  desc: "Blocks interception of user sessions. Protected using Firebase Auth JSON Web Tokens (JWT) with automatic 1-hour expiration, secure HTTP-only cookies, and HSTS (HTTP Strict Transport Security) forced HTTPS."
+                },
+                {
+                  name: "Privilege Escalation",
+                  desc: "Prevents regular users from gaining access to administration routes. Protected by server-side verification of authentication tokens against the Firestore /admins collection before processing mutations."
+                }
+              ].map((attack, i) => (
+                <div key={i} className="space-y-1">
+                  <h4 className="font-bold text-[#1D1A39] text-sm flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#F59F59]" />
+                    {attack.name}
+                  </h4>
+                  <p className="text-gray-500 text-xs leading-relaxed pl-3.5">{attack.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AUDIT LOGS SECURITY TAB */}
+      {activeTab === 'logs' && (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-[#1D1A39] to-[#451952] rounded-2xl p-6 text-white flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-[#F59F59]/20 border border-[#F59F59]/30 flex items-center justify-center flex-shrink-0">
+              <ScrollText className="w-5 h-5 text-[#F59F59]" />
+            </div>
+            <div>
+              <h2 className="font-bold text-xl font-display mb-1">System Security Audit Logs Guide</h2>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Understand how the system tracks operations, flags threats, and registers security logs.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-[#1D1A39]/10 shadow-sm p-6 space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-bold text-lg text-[#1D1A39] font-display border-b border-gray-100 pb-3">What Security Events Are Tracked?</h3>
+              <div className="space-y-4">
+                {[
+                  {
+                    title: "🔑 Authentication Events (ADMIN_LOGIN, ADMIN_LOGOUT)",
+                    desc: "Logs when an administrator logs in or out. Tracks the admin's email, timestamp, and metadata. Crucial for detecting credential abuse or anomalous session timings."
+                  },
+                  {
+                    title: "🗄️ Database Mutation Logs (CREATE, UPDATE, DELETE)",
+                    desc: "Every change made to any CMS collection (pages, blogs, testimonials, courses, tests, team) is logged with the email of the admin who did it. The log includes the modified document ID and a JSON dump of the fields modified."
+                  },
+                  {
+                    title: "🛡️ Rate Limit Bans (RATE_LIMIT_BLOCKED)",
+                    desc: "Logs security anomalies, such as when an IP address triggers rate-limiting blocks on newsletter subscriptions or login attempts. Helps flag DDoS and spam bot attacks."
+                  },
+                  {
+                    title: "⚠ Privilege Escalation Blocks (SECURITY_BLOCKED)",
+                    desc: "Logs unauthorized access attempts, such as when an administrator tries to access collections outside their role classification, or when unauthenticated requests hit write-protected API endpoints."
+                  }
+                ].map((item, i) => (
+                  <div key={i} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <h4 className="font-bold text-sm text-[#1D1A39] mb-1">{item.title}</h4>
+                    <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 pt-6 space-y-4">
+              <h3 className="font-bold text-lg text-[#1D1A39] font-display">Log Audit Guidelines for Admins</h3>
+              <ul className="list-disc list-inside space-y-2 text-sm text-gray-500 leading-relaxed">
+                <li><strong className="text-gray-700 font-bold">Trace User Action Trails:</strong> Search logs by typing an admin's email address to audit their full contribution and configuration edit history.</li>
+                <li><strong className="text-gray-700 font-bold">Investigate DB Changes:</strong> Expand any CREATE/UPDATE/DELETE log to inspect the JSON payload containing old vs new values.</li>
+                <li><strong className="text-gray-700 font-bold">Review Live Security Incidents:</strong> Pause live auto-refreshing in the audit log interface when performing forensics during an ongoing event.</li>
+              </ul>
             </div>
           </div>
         </div>

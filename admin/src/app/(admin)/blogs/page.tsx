@@ -1,7 +1,10 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { apiClient } from '@/api/client';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Eye, Save, Loader2, ArrowLeft, FileText, Check, UploadCloud } from 'lucide-react';
+
+const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
 export default function BlogManager() {
   const [blogs, setBlogs] = useState<any[]>([]);
@@ -16,6 +19,9 @@ export default function BlogManager() {
   const [content, setContent] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [published, setPublished] = useState(false);
+  const [ctaText, setCtaText] = useState('');
+  const [ctaLink, setCtaLink] = useState('');
+  const [authorName, setAuthorName] = useState('');
 
   const [mediaList, setMediaList] = useState<any[]>([]);
   const [showMediaSelector, setShowMediaSelector] = useState(false);
@@ -71,6 +77,9 @@ export default function BlogManager() {
     setExcerpt(blog.excerpt || '');
     setContent(blog.content || '');
     setCoverImage(blog.coverImage || '');
+    setCtaText(blog.ctaText || '');
+    setCtaLink(blog.ctaLink || '');
+    setAuthorName(blog.authorName || '');
     setPublished(blog.published || false);
     setEditingId(blog.id);
     setIsFormOpen(true);
@@ -99,6 +108,9 @@ export default function BlogManager() {
       excerpt,
       content,
       coverImage: toProxyUrl(coverImage), // Ensure stored image references Next.js proxy path
+      ctaText,
+      ctaLink,
+      authorName: authorName.trim() || 'Priyanshi Jain',
       published,
       createdAt: new Date().toISOString()
     };
@@ -125,6 +137,9 @@ export default function BlogManager() {
     setExcerpt('');
     setContent('');
     setCoverImage('');
+    setCtaText('');
+    setCtaLink('');
+    setAuthorName('');
     setPublished(false);
     setEditingId(null);
   };
@@ -253,13 +268,15 @@ export default function BlogManager() {
                         <ImageIcon className="w-3.5 h-3.5" /> Insert Proxy Media
                       </button>
                     </div>
-                    <textarea
-                      required
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      placeholder="Write your article content using markdown tags..."
-                      className="w-full px-4 py-3 bg-[#fafafa] border border-[#1D1A39]/10 rounded-xl focus:outline-none focus:border-[#F59F59] font-mono text-[#1D1A39] h-96"
-                    />
+                    <div data-color-mode="light">
+                      <MDEditor
+                        value={content}
+                        onChange={(val) => setContent(val || '')}
+                        height={400}
+                        preview="edit"
+                        className="w-full bg-[#fafafa]"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -267,6 +284,17 @@ export default function BlogManager() {
                 <div className="space-y-6">
                   <div className="bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
                     <h3 className="font-bold text-[#1D1A39] mb-4">Post Publishing</h3>
+
+                    <div className="mb-6">
+                      <label className="block text-sm font-bold text-[#1D1A39] mb-2">Author Name</label>
+                      <input
+                        type="text"
+                        value={authorName}
+                        onChange={(e) => setAuthorName(e.target.value)}
+                        placeholder="e.g. Priyanshi Jain"
+                        className="w-full px-4 py-2 bg-white border border-[#1D1A39]/10 rounded-lg focus:outline-none focus:border-[#F59F59] font-medium text-sm text-[#1D1A39]"
+                      />
+                    </div>
                     
                     <div className="flex items-center justify-between mb-4">
                       <span className="font-bold text-sm text-[#1D1A39]">Status: {published ? 'Published' : 'Draft'}</span>
@@ -297,13 +325,14 @@ export default function BlogManager() {
                           </button>
                         </div>
                       ) : (
-                        <div
+                        <button
+                          type="button"
                           onClick={() => { setActiveMediaTarget('cover'); setShowMediaSelector(true); }}
-                          className="w-full aspect-video border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100/50 transition-colors"
+                          className="w-full aspect-video border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:text-[#F59F59] hover:border-[#F59F59] transition-colors"
                         >
-                          <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                          <span className="text-xs text-gray-500 font-bold">Select Cover Media</span>
-                        </div>
+                          <ImageIcon className="w-8 h-8 mb-2" />
+                          <span className="text-sm font-bold">Select Cover Image</span>
+                        </button>
                       )}
                       
                       <input
@@ -313,6 +342,31 @@ export default function BlogManager() {
                         placeholder="Or paste media path directly..."
                         className="w-full px-3 py-2 bg-white border border-[#1D1A39]/10 rounded-lg focus:outline-none text-xs"
                       />
+                    </div>
+                  </div>
+                  <div className="bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+                    <h3 className="font-bold text-[#1D1A39] mb-4">End-of-Blog Button (CTA)</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#1D1A39] mb-1">Button Text</label>
+                        <input
+                          type="text"
+                          value={ctaText}
+                          onChange={(e) => setCtaText(e.target.value)}
+                          placeholder="e.g. Enroll in Course"
+                          className="w-full px-3 py-2 bg-white border border-[#1D1A39]/10 rounded-lg focus:outline-none focus:border-[#F59F59] text-sm font-medium text-[#1D1A39]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#1D1A39] mb-1">Redirect Link URL</label>
+                        <input
+                          type="url"
+                          value={ctaLink}
+                          onChange={(e) => setCtaLink(e.target.value)}
+                          placeholder="https://..."
+                          className="w-full px-3 py-2 bg-white border border-[#1D1A39]/10 rounded-lg focus:outline-none focus:border-[#F59F59] text-sm font-medium text-[#1D1A39]"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

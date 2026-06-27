@@ -123,12 +123,25 @@ export default function NavigationManager() {
     return <div className="p-8 flex items-center justify-center"><Loader2 className="w-8 h-8 text-blue-500 animate-spin" /></div>;
   }
 
+  const renderTextInput = (label: string, value: string, onChange: (val: string) => void, placeholder = "") => (
+    <div className="mb-4">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <input
+        type="text"
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+      />
+    </div>
+  );
+
   return (
     <div className="p-8 max-w-5xl mx-auto pb-24">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Global Navigation Manager</h1>
-          <p className="text-gray-500">Manage all website header and footer links directly.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Website Copy & Navigation Manager</h1>
+          <p className="text-gray-500">Manage website header, footer text, and all global links directly.</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -184,6 +197,10 @@ export default function NavigationManager() {
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
             Top Navigation Bar
           </h2>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+            <h3 className="text-lg font-bold text-gray-800 mb-6">Navbar Text Settings</h3>
+            {renderTextInput("Logo Text (Use dot '.' to color it amber)", navData.logoText, (val) => setNavData({...navData, logoText: val}), "Forensics By Priyanshi.")}
+          </div>
           {renderLinkEditor("Main Navigation Links (Visible)", navData, setNavData, "mainLinks")}
           {renderLinkEditor("Dropdown Menu Links ('More')", navData, setNavData, "dropdownLinks")}
         </section>
@@ -192,8 +209,19 @@ export default function NavigationManager() {
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 mt-4">
             Website Footer
           </h2>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+            <h3 className="text-lg font-bold text-gray-800 mb-6">Footer Text Settings</h3>
+            {renderTextInput("Footer Description", footerData.description, (val) => setFooterData({...footerData, description: val}), "The premier destination for forensic science education...")}
+            {renderTextInput("Contact Us Title", footerData.contactTitle, (val) => setFooterData({...footerData, contactTitle: val}), "Contact Us")}
+            {renderTextInput("Copyright Text", footerData.copyrightText, (val) => setFooterData({...footerData, copyrightText: val}), "© 2026 Priyanshi Academy. All rights reserved.")}
+            <div className="grid grid-cols-2 gap-4 mt-4">
+               {renderTextInput("Developer Text", footerData.developerText, (val) => setFooterData({...footerData, developerText: val}), "Designed for Excellence.")}
+               {renderTextInput("Developer Link", footerData.developerLink, (val) => setFooterData({...footerData, developerLink: val}), "https://...")}
+            </div>
+          </div>
           {renderLinkEditor("Explore Column", footerData, setFooterData, "exploreLinks")}
           {renderLinkEditor("Company Column", footerData, setFooterData, "companyLinks")}
+          {renderLinkEditor("Contact Links", footerData, setFooterData, "contactLinks")}
         </section>
       </div>
     </div>

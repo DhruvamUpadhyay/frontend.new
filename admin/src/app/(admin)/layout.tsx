@@ -21,7 +21,8 @@ import {
   X,
   History,
   ScrollText,
-  Globe
+  Globe,
+  Users
 } from 'lucide-react';
 
 import { doc, getDoc } from 'firebase/firestore';
@@ -30,6 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // Auto-close on mobile screens on mount
   useEffect(() => {
@@ -43,22 +45,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!user) {
         router.push('/login');
       } else {
-        const phone = user.phoneNumber;
-        const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE_NUMBER || '+919274173384';
+        const email = user.email?.toLowerCase().trim();
+        const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'developer@forensicbypriyanshi.com').toLowerCase().trim();
         
         // 1. Primary admin check bypass
-        if (phone === adminPhone) {
+        if (email === adminEmail) {
+          setUserRole('Developer');
           return;
         }
 
         // 2. Admins collection check
-        if (phone) {
+        if (email) {
           try {
-            const adminDoc = await getDoc(doc(db, 'admins', phone));
+            const adminDoc = await getDoc(doc(db, 'admins', email));
             if (adminDoc.exists()) {
+              setUserRole(adminDoc.data().role || 'Admin');
               return; // Authorized admin
             }
-          } catch (err) {
+          } catch (err: any) {
             console.error('Failed to check admin authorization collection:', err);
           }
         }
@@ -78,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const user = auth.currentUser;
       await addDoc(collection(db, 'system_logs'), {
         action: 'ADMIN_LOGOUT',
-        adminEmail: user?.email || user?.phoneNumber || 'unknown',
+        adminEmail: user?.email || 'unknown',
         collectionName: '',
         docId: '',
         timestamp: new Date().toISOString(),
@@ -89,17 +93,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/login');
   };
 
-  const navItems = [
-    { name: 'Homepage Editor', path: '/', icon: LayoutDashboard },
-    { name: 'Blog Manager', path: '/blogs', icon: BookOpen },
-    { name: 'Page Manager', path: '/pages', icon: FileText },
-    { name: 'Newsletter Emails', path: '/newsletter', icon: Mail },
-    { name: 'Media Manager', path: '/media', icon: ImageIcon },
-    { name: 'System Settings', path: '/settings', icon: Paintbrush },
-    { name: 'Visitor Analytics', path: '/visitors', icon: Globe },
-    { name: 'Audit Logs', path: '/logs', icon: ScrollText },
-    { name: 'System Version', path: '/version', icon: History },
+  const allNavItems = [
+    { name: 'Homepage Editor', path: '/', icon: LayoutDashboard, roles: ['Developer', 'Admin', 'Manager'] },
+    { name: 'Website Copy', path: '/navigation', icon: FileText, roles: ['Developer', 'Admin', 'Manager'] },
+    { name: 'SEO & Meta Tags', path: '/seo', icon: Globe, roles: ['Developer', 'Admin', 'Manager'] },
+    { name: 'Blog Manager', path: '/blogs', icon: BookOpen, roles: ['Developer', 'Admin', 'Editor'] },
+    { name: 'Page Manager', path: '/pages', icon: FileText, roles: ['Developer', 'Admin', 'Manager'] },
+    { name: 'Newsletter Emails', path: '/newsletter', icon: Mail, roles: ['Developer', 'Admin', 'Editor'] },
+    { name: 'Media Manager', path: '/media', icon: ImageIcon, roles: ['Developer', 'Admin', 'Manager', 'Editor'] },
+    
+    // System level - Developer & Admin
+    { name: 'Team Management', path: '/team', icon: Users, roles: ['Developer', 'Admin'] },
+    { name: 'System Settings', path: '/settings', icon: Paintbrush, roles: ['Developer', 'Admin'] },
+    { name: 'Visitor Analytics', path: '/visitors', icon: Globe, roles: ['Developer', 'Admin'] },
+    { name: 'Audit Logs', path: '/logs', icon: ScrollText, roles: ['Developer', 'Admin'] },
+    { name: 'System Version', path: '/version', icon: History, roles: ['Developer', 'Admin'] },
   ];
+
+  const navItems = allNavItems.filter(item => !userRole || item.roles.includes(userRole));
+
+  // Route Guarding
+  useEffect(() => {
+    if (userRole) {
+      const isAllowed = allNavItems.some(item => item.path === pathname && item.roles.includes(userRole));
+      if (!isAllowed) {
+        // Find their first allowed route
+        const fallback = allNavItems.find(item => item.roles.includes(userRole))?.path || '/';
+        router.push(fallback);
+      }
+    }
+  }, [pathname, userRole, router]);
+
+  // Prevent rendering if role is not loaded yet
+  if (!userRole) {
+    return <div className="min-h-screen bg-[#fafafa] flex items-center justify-center text-xl font-bold text-[#1D1A39]">Verifying Access...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col lg:flex-row relative">

@@ -3,15 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack -p 5174",
-    "build": "next build",
-    "start": "next start",
+    "dev": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 next dev --webpack -p 5174",
+    "build": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 next build",
+    "start": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.60.0",
+    "@uiw/react-md-editor": "^4.1.1",
+    "cross-env": "^10.1.0",
     "firebase": "^12.14.0",
+    "firebase-admin": "^14.0.0",
     "lucide-react": "^1.18.0",
     "next": "16.2.9",
+    "next-remove-imports": "^1.0.13",
+    "nodemailer": "^9.0.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.6.0"
@@ -19,6 +25,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
