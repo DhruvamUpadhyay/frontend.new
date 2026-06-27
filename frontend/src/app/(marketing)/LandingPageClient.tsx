@@ -709,26 +709,29 @@ const CTAFooter = ({ data }: { data: any }) => {
             </p>
           </div>
           
-          {/* Column 2: Quick Links */}
-          <div>
-            <h4 className="font-bold text-white mb-4 uppercase tracking-widest text-xs">Quick Links</h4>
-            <ul className="space-y-3 text-peach/80 text-sm font-medium">
-              <li><a href="#courses" className="hover:text-amber transition-colors">Premium Courses</a></li>
-              <li><a href="#materials" className="hover:text-amber transition-colors">Study Materials</a></li>
-              <li><a href="#tests" className="hover:text-amber transition-colors">Mock Tests</a></li>
-              <li><a href="#podcasts" className="hover:text-amber transition-colors">Interviews & Podcasts</a></li>
-            </ul>
-          </div>
-          
-          {/* Column 3: Support */}
-          <div>
-            <h4 className="font-bold text-white mb-4 uppercase tracking-widest text-xs">Support</h4>
-            <ul className="space-y-3 text-peach/80 text-sm font-medium">
-              <li><a href="mailto:dev.forensicsbypriyanshi@gmail.com" className="hover:text-amber transition-colors">Contact Us</a></li>
-              <li><a href="#faq" className="hover:text-amber transition-colors">FAQs</a></li>
-              <li><a href="#" className="hover:text-amber transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-amber transition-colors">Terms of Service</a></li>
-            </ul>
+          {/* Nested grid for Quick Links and Support to be side-by-side on mobile */}
+          <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-8 md:gap-12">
+            {/* Column 2: Quick Links */}
+            <div>
+              <h4 className="font-bold text-white mb-4 uppercase tracking-widest text-xs">Quick Links</h4>
+              <ul className="space-y-3 text-peach/80 text-sm font-medium">
+                <li><a href="#courses" className="hover:text-amber transition-colors">Premium Courses</a></li>
+                <li><a href="#materials" className="hover:text-amber transition-colors">Study Materials</a></li>
+                <li><a href="#tests" className="hover:text-amber transition-colors">Mock Tests</a></li>
+                <li><a href="#podcasts" className="hover:text-amber transition-colors">Interviews & Podcasts</a></li>
+              </ul>
+            </div>
+            
+            {/* Column 3: Support */}
+            <div>
+              <h4 className="font-bold text-white mb-4 uppercase tracking-widest text-xs">Support</h4>
+              <ul className="space-y-3 text-peach/80 text-sm font-medium">
+                <li><a href="mailto:dev.forensicsbypriyanshi@gmail.com" className="hover:text-amber transition-colors">Contact Us</a></li>
+                <li><a href="#faq" className="hover:text-amber transition-colors">FAQs</a></li>
+                <li><a href="#" className="hover:text-amber transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-amber transition-colors">Terms of Service</a></li>
+              </ul>
+            </div>
           </div>
 
           {/* Column 4: Social */}
