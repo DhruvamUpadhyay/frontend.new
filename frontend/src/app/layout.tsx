@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
+import { Inter, Poppins, DM_Serif_Display } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
@@ -11,7 +11,13 @@ const inter = Inter({
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  variable: "--font-dm-serif",
+  subsets: ["latin"],
+  weight: ["400"],
 });
 
 import { db } from '@/config/firebase';
@@ -72,7 +78,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     other: {
       'theme-color': '#1D1A39',
-      'apple-mobile-web-app-capable': 'yes',
+      'mobile-web-app-capable': 'yes',
       'apple-mobile-web-app-status-bar-style': 'black-translucent',
     },
   };
@@ -97,10 +103,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${poppins.variable} antialiased snap-y snap-mandatory scroll-smooth`}>
-      <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-      </head>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${poppins.variable} ${dmSerifDisplay.variable} antialiased scroll-smooth`}>
       <body className="min-h-screen flex flex-col bg-[#1D1A39] text-white">
         <script
           type="application/ld+json"

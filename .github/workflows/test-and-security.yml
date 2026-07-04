@@ -1,0 +1,62 @@
+name: Test and Security Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  security-audit:
+    name: Security Scans
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Run Secretlint
+        run: npx secretlint "**/*" --ignore "node_modules/**/*" --ignore "**/node_modules/**/*"
+
+      - name: Frontend NPM Audit
+        working-directory: ./frontend
+        run: npm audit --audit-level=high
+
+      - name: Admin NPM Audit
+        working-directory: ./admin
+        run: npm audit --audit-level=high
+
+  unit-tests:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run Frontend Tests
+        working-directory: ./frontend
+        run: npm test
+
+      - name: Install Admin Dependencies
+        working-directory: ./admin
+        run: npm ci
+
+      - name: Run Admin Tests
+        working-directory: ./admin
+        run: npm test

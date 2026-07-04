@@ -62,7 +62,7 @@ export default function BlogsClient({ initialBlogs = [] }: { initialBlogs: any[]
 
       {/* 2. Featured Blogs Carousel Section */}
       {featuredBlogs.length > 0 && (
-        <div className="relative w-full rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#451952]/10 backdrop-blur-lg p-6 md:p-10 shadow-2xl flex flex-col md:flex-row gap-8 items-center min-h-[400px]">
+        <div className="relative w-full rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#1D1A39]/10 backdrop-blur-lg p-6 md:p-10 shadow-2xl flex flex-col md:flex-row gap-8 items-center min-h-[400px]">
           {/* Active Slide Content */}
           {featuredBlogs.map((blog, idx) => {
             if (idx !== activeSlide) return null;
@@ -175,7 +175,7 @@ export default function BlogsClient({ initialBlogs = [] }: { initialBlogs: any[]
             <Link 
               key={blog.id} 
               href={`/blogs/${blog.slug}`}
-              className="group bg-[#451952]/10 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden shadow-lg flex flex-col justify-between hover:-translate-y-1.5 hover:border-amber/40 hover:shadow-2xl transition-all duration-300 h-full"
+              className="group bg-[#1D1A39]/10 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden shadow-lg flex flex-col justify-between hover:-translate-y-1.5 hover:border-amber/40 hover:shadow-2xl transition-all duration-300 h-full"
             >
               <div>
                 <div className="aspect-video w-full relative bg-white/5 overflow-hidden border-b border-white/10">

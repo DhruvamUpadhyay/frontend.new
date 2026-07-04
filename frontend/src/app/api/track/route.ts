@@ -1,16 +1,32 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
-// A4 FIX: CSRF origin check
+// ──────────────────────────────────────────────────────────────────────
+// Zod schema for tracking data
+// ──────────────────────────────────────────────────────────────────────
+const TrackSchema = z.object({
+  page: z.string().max(500).default('/'),
+  referrer: z.string().max(1000).default(''),
+  screenWidth: z.number().int().nonnegative().default(0),
+  screenHeight: z.number().int().nonnegative().default(0),
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// CSRF origin check
+// ──────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'https://forensicsbypriyanshi.com',
   'https://www.forensicsbypriyanshi.com',
 ];
 
-// A4 FIX: Firestore-backed persistent rate limiter (survives serverless restarts)
+// ──────────────────────────────────────────────────────────────────────
+// Firestore-backed persistent rate limiter (survives serverless restarts)
+// FIX: Fails CLOSED — blocks requests when Firestore is unreachable
+// ──────────────────────────────────────────────────────────────────────
 async function checkTrackRateLimit(ip: string): Promise<boolean> {
   const sanitizedIp = ip.replace(/[./:\\[\]]/g, '_');
   const ref = adminDb.collection('rate_limits').doc(`track_${sanitizedIp}`);
@@ -37,13 +53,13 @@ async function checkTrackRateLimit(ip: string): Promise<boolean> {
     });
   } catch (err) {
     console.error('Track rate limit check failed:', err);
-    return true; // fail-open
+    return false; // FAIL-CLOSED
   }
 }
 
 export async function POST(request: Request) {
   try {
-    // A4 FIX: CSRF origin check
+    // CSRF origin check
     const origin = request.headers.get('origin') || '';
     if (origin && !ALLOWED_ORIGINS.includes(origin)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -55,7 +71,7 @@ export async function POST(request: Request) {
       request.headers.get('x-real-ip') ||
       'unknown';
 
-    // A4 FIX: Persistent IP-based rate limiting via Firestore
+    // Persistent IP-based rate limiting via Firestore
     if (ip !== 'unknown') {
       const allowed = await checkTrackRateLimit(ip);
       if (!allowed) {
@@ -69,9 +85,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
     }
 
-    const body = JSON.parse(rawBody);
-    const { page, referrer, screenWidth, screenHeight } = body || {};
+    // Zod schema validation
+    let parsed;
+    try {
+      const body = JSON.parse(rawBody);
+      parsed = TrackSchema.parse(body || {});
+    } catch (err) {
+      // Return 200 even on error — tracking should never break the user experience
+      return NextResponse.json({ ok: false, error: 'Validation failed' });
+    }
 
+    const { page, referrer, screenWidth, screenHeight } = parsed;
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
     // Parse basic device info from user-agent
@@ -95,38 +119,41 @@ export async function POST(request: Request) {
     else if (/android/i.test(userAgent)) os = 'Android';
     else if (/iphone|ipad/i.test(userAgent)) os = 'iOS';
 
-    // Attempt geolocation via free ip-api.com (non-commercial use, no key needed)
+    // Attempt geolocation via free ip-api.com
+    // Uses HTTPS to prevent MITM
     let geo: Record<string, string> = {};
-    try {
-      const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,isp,query`, {
-        signal: AbortSignal.timeout(2000), // 2s timeout to not slow down tracking
-      });
-      if (geoRes.ok) {
-        const geoData = await geoRes.json();
-        if (geoData.status === 'success') {
-          geo = {
-            country: geoData.country || '',
-            region: geoData.regionName || '',
-            city: geoData.city || '',
-            isp: geoData.isp || '',
-          };
+    if (ip !== 'unknown' && ip !== '127.0.0.1' && ip !== '::1') {
+      try {
+        const geoRes = await fetch(`https://ipapi.co/${ip}/json/`, {
+          signal: AbortSignal.timeout(2000), // 2s timeout
+        });
+        if (geoRes.ok) {
+          const geoData = await geoRes.json();
+          if (!geoData.error) {
+            geo = {
+              country: geoData.country_name || '',
+              region: geoData.region || '',
+              city: geoData.city || '',
+              isp: geoData.org || '',
+            };
+          }
         }
+      } catch {
+        // Geolocation failed — not critical, continue without it
       }
-    } catch {
-      // Geolocation failed — not critical, continue without it
     }
 
     // Write to Firestore
     await adminDb.collection('visitor_logs').add({
       ip: ip.substring(0, 45), // truncate for safety
-      page: (page || '/').substring(0, 500),
-      referrer: (referrer || '').substring(0, 1000),
+      page: page,
+      referrer: referrer,
       userAgent: userAgent.substring(0, 500),
       deviceType,
       browser,
       os,
-      screenWidth: screenWidth || 0,
-      screenHeight: screenHeight || 0,
+      screenWidth,
+      screenHeight,
       geo,
       timestamp: new Date().toISOString(),
     });
@@ -134,7 +161,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Visitor tracking error:', error);
-    // Return 200 even on error — tracking should never break the user experience
     return NextResponse.json({ ok: false });
   }
 }

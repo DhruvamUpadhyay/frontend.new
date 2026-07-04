@@ -86,7 +86,10 @@ export default function VisitorAnalyticsPage() {
     if (!silent) setLoading(false);
   }, []);
 
-  useEffect(() => { fetchVisitors(); }, [fetchVisitors]);
+  useEffect(() => { 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchVisitors(); 
+  }, [fetchVisitors]);
 
   useEffect(() => {
     if (isLive) {

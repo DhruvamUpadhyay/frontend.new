@@ -65,7 +65,7 @@ export async function GET() {
 
     // Hardcoding subscriber count to 111,000 as requested by the user
     // Since the @forensicbypriyanshi handle only has 3.9k, we will use the 111k value directly.
-    let subscriberCount = 111000;
+    const subscriberCount = 111000;
 
     return NextResponse.json({ videos: shorts, subscriberCount });
   } catch (error: any) {

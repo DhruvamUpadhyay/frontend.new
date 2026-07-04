@@ -99,7 +99,7 @@ export default async function AboutPage() {
             { icon: GraduationCap, label: safeData.stat3Label, value: safeData.stat3Value },
             { icon: Mic, label: safeData.stat4Label, value: safeData.stat4Value },
           ].map((stat, i) => (
-            <div key={i} className="bg-[#451952] border border-white/5 p-6 rounded-2xl flex flex-col items-center text-center">
+            <div key={i} className="bg-[#1D1A39] border border-white/5 p-6 rounded-2xl flex flex-col items-center text-center">
               <stat.icon className="w-8 h-8 text-amber mb-4" />
               <h3 className="font-display text-3xl font-bold text-white mb-1">{stat.value}</h3>
               <p className="text-white/50 text-xs font-bold uppercase tracking-widest">{stat.label}</p>
@@ -108,7 +108,7 @@ export default async function AboutPage() {
         </div>
 
         {/* Mission Statement */}
-        <div className="bg-[#451952] border border-white/5 rounded-[3rem] p-10 md:p-16 text-center max-w-4xl mx-auto relative overflow-hidden">
+        <div className="bg-[#1D1A39] border border-white/5 rounded-[3rem] p-10 md:p-16 text-center max-w-4xl mx-auto relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-amber rounded-full mix-blend-multiply filter blur-[100px] opacity-10" />
           <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-6">Our Mission</h2>
           <p className="text-white/80 text-lg md:text-xl font-medium leading-relaxed italic">

@@ -28,6 +28,11 @@ export function middleware(request: NextRequest) {
     'camera=(), microphone=(), geolocation=(), payment=()'
   );
 
+  // Cross-Origin Isolation (defense against Spectre)
+  // Commenting out Embedder-Policy for now as it breaks Tawk.to and YouTube embeds
+  // headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+
   // HSTS — enforce HTTPS for 1 year (only set in production)
   if (process.env.NODE_ENV === 'production') {
     headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
@@ -39,10 +44,10 @@ export function middleware(request: NextRequest) {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://embed.tawk.to https://cdn.tawk.to https://browser.sentry-cdn.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to https://cdn.tawk.to",
-      "font-src 'self' https://fonts.gstatic.com https://embed.tawk.to https://cdn.tawk.to",
-      "img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://img.youtube.com https://*.googleusercontent.com https://embed.tawk.to https://cdn.tawk.to https://randomuser.me",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://embed.tawk.to https://cdn.tawk.to https://browser.sentry-cdn.com https://cdn.jsdelivr.net",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to https://cdn.tawk.to https://cdn.jsdelivr.net",
+      "font-src 'self' https://fonts.gstatic.com https://embed.tawk.to https://cdn.tawk.to https://cdn.jsdelivr.net",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://img.youtube.com https://*.googleusercontent.com https://embed.tawk.to https://cdn.tawk.to https://randomuser.me https://cdn.jsdelivr.net",
       "media-src 'self' https://res.cloudinary.com",
       "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://firestore.googleapis.com https://identitytoolkit.googleapis.com wss://*.tawk.to https://va.tawk.to https://embed.tawk.to https://*.ingest.sentry.io https://*.sentry.io",
       "frame-src 'self' https://www.youtube.com https://*.tawk.to",

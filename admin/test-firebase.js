@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, getDocs } = require("firebase/firestore");
 
@@ -8,3 +9,4 @@ getDocs(collection(db, "courses")).then(snap => {
   console.log("Docs count: ", snap.docs.length);
   snap.forEach(d => console.log(d.id, d.data()));
 }).catch(console.error);
+

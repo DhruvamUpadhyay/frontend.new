@@ -131,7 +131,7 @@ const AnimatedNumber = ({ end, suffix = "", isLive = false }: { end: number, suf
 const Hero = ({ data, ytSubs }: { data: any, ytSubs?: number }) => {
   const safeData = data || {};
   return (
-    <section className="relative snap-start min-h-[100svh] flex flex-col items-center justify-center pt-24 pb-12 overflow-hidden bg-transparent text-center">
+    <section className="relative snap-start h-[100svh] flex flex-col items-center justify-center pt-24 pb-12 overflow-hidden bg-transparent text-center">
       <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center w-full mt-2">
         <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5 text-white tracking-tight">
           <div className="fade-up-element stagger-1">{safeData.heroTitle || "India's Fastest-Growing"}</div>
@@ -191,41 +191,38 @@ const Hero = ({ data, ytSubs }: { data: any, ytSubs?: number }) => {
 const OneOnOneGuidance = ({ data }: { data: any }) => {
   const safeData = data || {};
   return (
-    <section id="guidance" className="snap-start min-h-[100svh] w-full bg-peach relative overflow-hidden flex flex-col pt-32 pb-20 border-b border-white/5 text-navy">
-      <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 relative z-10 flex flex-col lg:flex-row items-center gap-12 lg:gap-16 my-auto">
-        <div className="w-full lg:w-[60%] fade-up-element flex flex-col justify-center text-left shrink-0">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple/10 border border-purple/20 text-purple text-xs font-bold tracking-[0.2em] uppercase mb-6 w-max">
-            <Star className="w-3 h-3 text-rose" /> 1-on-1 Guidance
-          </div>
-          <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-navy leading-[1.2]">
+    <section id="guidance" className="snap-start h-[100svh] w-full bg-peach relative overflow-hidden flex flex-col pt-28 pb-20 border-b border-white/5 text-navy">
+      <div className="w-full px-6 lg:px-12 xl:px-20 relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 my-auto">
+        <div className="w-full lg:w-[40%] fade-up-element flex flex-col justify-center text-left shrink-0">
+          <h2 className="font-display text-4xl md:text-5xl font-bold mb-5 text-navy leading-[1.2]">
             {safeData.guidanceTitle || "Get One-on-One Career Guidance Directly from Priyanshi ma'am"}
           </h2>
-          <p className="text-purple text-lg md:text-xl font-medium mb-8 leading-relaxed max-w-2xl">
+          <p className="text-purple text-lg md:text-xl font-medium mb-6 leading-relaxed max-w-2xl">
             {safeData.guidanceSubtitle || "Get clarity on anything & everything that you have in your head related to Forensic Science."}
           </p>
           
-          <ul className="space-y-4 mb-10 fade-up-element stagger-2">
-            <li className="flex items-center gap-3 text-navy font-bold text-[17px]">
-              <div className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center shadow-sm">
-                <CheckCircle2 className="w-4 h-4 text-purple" />
-              </div>
-              Personalized Career Roadmap
-            </li>
-            <li className="flex items-center gap-3 text-navy font-bold text-[17px]">
-              <div className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center shadow-sm">
-                <CheckCircle2 className="w-4 h-4 text-purple" />
-              </div>
-              Resume & Portfolio Review
-            </li>
-            <li className="flex items-center gap-3 text-navy font-bold text-[17px]">
-              <div className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center shadow-sm">
-                <CheckCircle2 className="w-4 h-4 text-purple" />
-              </div>
-              Direct Industry Insights
-            </li>
+          <ul className="space-y-3 mb-4 fade-up-element stagger-2">
+            {[
+              "Scope of forensic science (jobs, salary, etc.)?",
+              "Is this field for you or not?",
+              "Best colleges to study forensic science?",
+              "Exams to qualify for a job?",
+              "How should you prepare yourself?",
+              "Course to pursue?"
+            ].map((text, i) => (
+              <li key={i} className="flex items-start gap-3 text-navy font-bold text-[15px] sm:text-[17px]">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/40 flex items-center justify-center shadow-sm shrink-0 mt-0.5">
+                  <CheckCircle2 className="w-4 h-4 text-purple" />
+                </div>
+                <span>{text}</span>
+              </li>
+            ))}
           </ul>
+          <p className="text-navy font-bold text-[17px] mb-4 fade-up-element stagger-2 italic">
+            And many more questions...
+          </p>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-6 border-t border-purple/20 mt-auto lg:mt-0">
+          <div className="lg:hidden flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-5 border-t border-purple/20 mt-4">
             <div>
               <p className="text-purple text-xs uppercase font-bold tracking-wider mb-1">Session Pass</p>
               <p className="text-navy font-display text-4xl font-bold">{safeData.guidancePrice || "₹999"}</p>
@@ -236,8 +233,17 @@ const OneOnOneGuidance = ({ data }: { data: any }) => {
           </div>
         </div>
 
+        {/* Center Empty Space Pricing Block (Desktop only) */}
+        <div className="hidden lg:flex lg:w-[25%] flex-col items-center justify-center shrink-0 fade-up-element stagger-2 p-6 rounded-[2rem] bg-white/40 border border-white/60 shadow-xl">
+          <p className="text-purple text-sm uppercase font-bold tracking-[0.15em] mb-3">Session Pass</p>
+          <p className="text-navy font-display text-5xl font-bold mb-6">{safeData.guidancePrice || "₹999"}</p>
+          <HeroButton to={safeData.guidanceUrl || "/student/counselling"} primary>
+            Book Session <Calendar className="w-5 h-5" />
+          </HeroButton>
+        </div>
+
         {/* Right Side Image Window */}
-        <div className="w-full lg:w-[40%] fade-up-element stagger-2 flex justify-center lg:justify-end mt-12 lg:mt-0">
+        <div className="w-full lg:w-[30%] fade-up-element stagger-2 flex justify-center lg:justify-end mt-12 lg:mt-0">
           <div className="w-full max-w-[320px] lg:max-w-sm aspect-[3/4] rounded-[2rem] overflow-hidden flex flex-col items-center justify-center relative shadow-2xl bg-white/40 border border-white/60">
             {safeData.guidanceImage ? (
               <img src={safeData.guidanceImage} alt="1-on-1 Guidance" className="w-full h-full object-cover" />
@@ -271,17 +277,17 @@ const Courses = ({ initialCourses = [] }: { initialCourses?: any[] }) => {
   };
 
   return (
-    <section id="courses" className="snap-start min-h-[100svh] py-24 bg-purple relative z-10 border-b border-white/10 flex flex-col justify-center">
+    <section id="courses" className="snap-start h-[100svh] pt-32 pb-16 bg-white relative z-10 border-b border-navy/10 flex flex-col justify-start overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 w-full">
-        <div className="text-center mb-16 fade-up-element">
-          <h2 className="font-display text-4xl md:text-5xl font-bold mb-4 text-white">Premium <span className="text-amber">Courses</span></h2>
-          <p className="text-peach max-w-2xl mx-auto text-lg font-medium">Click on any course card to reveal curriculum details and enrollment options.</p>
+        <div className="text-center mb-10 fade-up-element">
+          <h2 className="font-display text-4xl md:text-5xl font-bold mb-4 text-navy">Premium <span className="text-rose">Courses</span></h2>
+          <p className="text-navy/70 max-w-2xl mx-auto text-lg font-medium">Click on any course card to reveal curriculum details and enrollment options.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl mx-auto fade-up-element stagger-2">
           {initialCourses.length === 0 && (
-            <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-white/5 rounded-3xl border border-white/10">
-              <h3 className="text-2xl font-display font-bold text-white mb-2">New Batches Launching Soon</h3>
-              <p className="text-peach font-medium">We are currently updating our premium course catalog. Check back shortly!</p>
+            <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-navy/5 rounded-3xl border border-navy/10">
+              <h3 className="text-2xl font-display font-bold text-navy mb-2">New Batches Launching Soon</h3>
+              <p className="text-navy/70 font-medium">We are currently updating our premium course catalog. Check back shortly!</p>
             </div>
           )}
           {initialCourses.map((course, i) => (
@@ -349,7 +355,7 @@ const Courses = ({ initialCourses = [] }: { initialCourses?: any[] }) => {
 // Mock Tests Section
 const MockTests = ({ tests = [] }: { tests?: any[] }) => {
   return (
-    <section id="tests-section" className="snap-start min-h-[100svh] py-24 bg-navy relative z-10 border-b border-plum flex flex-col justify-center overflow-hidden">
+    <section id="tests-section" className="snap-start h-[100svh] py-24 bg-navy relative z-10 border-b border-plum flex flex-col justify-center overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-plum/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-50"></div>
       
@@ -387,13 +393,12 @@ const MockTests = ({ tests = [] }: { tests?: any[] }) => {
           {/* Right Cards Grid */}
           <div className="lg:col-span-7 fade-up-element stagger-2 relative">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
-              {tests.length === 0 ? (
-                <div className="col-span-full py-20 text-center bg-purple/40 backdrop-blur-md border border-plum rounded-3xl shadow-2xl">
-                  <p className="text-peach text-lg font-bold">New test slots opening shortly.</p>
-                  <p className="text-white/60 text-sm mt-2">Stay tuned for the latest mock tests.</p>
-                </div>
-              ) : (
-                tests.map((test, i) => (
+              {(tests.length === 0 ? [
+                { title: "CUET PG Forensic Science Mock Test 2024", category: "CUET PG" },
+                { title: "NFSU Entrance Full Syllabus Mock", category: "NFSU" },
+                { title: "UGC NET Paper 2 Forensic Science Exam", category: "UGC NET" },
+                { title: "DU M.Sc Forensic Science Entrance Prep", category: "DU" }
+              ] : tests).map((test, i) => (
                   <div key={i} className="group w-full aspect-[3/4] min-h-[450px] bg-purple/40 backdrop-blur-md border border-plum hover:border-amber/50 rounded-[2rem] p-8 hover:bg-purple/60 transition-all duration-300 flex flex-col justify-between text-left shadow-2xl hover:-translate-y-2 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-amber/10 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
                     
@@ -417,8 +422,7 @@ const MockTests = ({ tests = [] }: { tests?: any[] }) => {
                       </div>
                     </div>
                   </div>
-                ))
-              )}
+                ))}
             </div>
           </div>
           
@@ -431,19 +435,18 @@ const MockTests = ({ tests = [] }: { tests?: any[] }) => {
 // Study Notes / Materials Section
 const StudyNotes = ({ materials = [] }: { materials?: any[] }) => {
   return (
-    <section id="materials-section" className="snap-start min-h-[100svh] py-24 bg-peach relative z-10 border-b border-white/10 flex flex-col justify-center">
+    <section id="materials-section" className="snap-start h-[100svh] py-24 bg-peach relative z-10 border-b border-white/10 flex flex-col justify-center">
       <div className="max-w-6xl mx-auto px-6 w-full text-navy">
         <div className="text-center mb-16 fade-up-element">
           <h2 className="font-display text-4xl md:text-5xl font-bold mb-4 text-navy">Study Notes & <span className="text-plum">Resources</span></h2>
           <p className="text-purple max-w-2xl mx-auto text-lg font-medium">Download high-yield, chapter-wise notes compiled by Priyanshi Jain.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto fade-up-element stagger-2">
-          {materials.length === 0 ? (
-            <div className="col-span-full py-16 text-center bg-purple/10 border border-purple/20 rounded-2xl">
-              <p className="text-purple font-medium">Notes uploads are currently updating.</p>
-            </div>
-          ) : (
-            materials.map((mat, i) => (
+          {(materials.length === 0 ? [
+            { title: "Crime Scene Investigation Complete Guide", description: "In-depth notes on crime scene processing, evidence collection, and photography.", type: "PDF" },
+            { title: "Forensic Toxicology Cheat Sheet", description: "A quick revision guide covering major poisons, their mechanisms, and extraction methods.", type: "Document" },
+            { title: "Fingerprint Analysis & Ridge Patterns", description: "Detailed diagrams and explanations of friction ridge analysis and fingerprint classification.", type: "PDF" }
+          ] : materials).map((mat, i) => (
               <div key={i} className="bg-purple/10 border border-purple/20 rounded-2xl p-6 flex flex-col justify-between text-left hover:bg-purple/20 transition-colors">
                 <div>
                   <h3 className="font-bold text-lg text-navy mb-2 font-display">{mat.title}</h3>
@@ -451,8 +454,7 @@ const StudyNotes = ({ materials = [] }: { materials?: any[] }) => {
                 </div>
                 <a href="https://app.forensicbypriyanshi.com/login" className="text-xs text-rose font-bold hover:underline flex items-center gap-1">Download Resource File →</a>
               </div>
-            ))
-          )}
+            ))}
         </div>
       </div>
     </section>
@@ -477,7 +479,7 @@ const Podcasts = ({ podcasts = [] }: { podcasts?: any[] }) => {
   }
 
   return (
-    <section id="podcasts" className="snap-start min-h-[100svh] py-24 bg-peach overflow-hidden flex flex-col justify-center border-b border-plum/20 relative z-10">
+    <section id="podcasts" className="snap-start h-[100svh] py-24 bg-peach overflow-hidden flex flex-col justify-center border-b border-plum/20 relative z-10">
       <div className="text-center mb-12 md:mb-16 max-w-5xl mx-auto px-6 fade-up-element">
         <span className="text-plum font-extrabold uppercase tracking-widest text-xs md:text-sm mb-3 block">Interviews & Big Collaborations</span>
         <h2 className="font-display text-4xl md:text-6xl font-bold text-navy mb-6 leading-tight">Priyanshi on Top Podcasts</h2>
@@ -521,7 +523,7 @@ const Podcasts = ({ podcasts = [] }: { podcasts?: any[] }) => {
 // YouTube Video Shorts (Marquee)
 const YouTubeVideos = ({ videos }: { videos: any[] }) => {
   return (
-    <section id="live-shorts" className="snap-start min-h-[100svh] pt-24 pb-8 bg-navy overflow-hidden flex flex-col justify-center border-b border-plum">
+    <section id="live-shorts" className="snap-start h-[100svh] pt-24 pb-8 bg-navy overflow-hidden flex flex-col justify-center border-b border-plum">
       <div className="text-center mb-12 max-w-4xl mx-auto px-6">
         <p className="text-peach font-bold uppercase tracking-widest text-xs mb-2">Live Updates & Video Guides</p>
         <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">Latest YouTube Shorts</h2>
@@ -575,7 +577,7 @@ const LatestChannelVideos = ({ videos = [] }: { videos?: any[] }) => {
   }
 
   return (
-    <section id="latest-videos" className="snap-start min-h-[100svh] py-24 bg-peach overflow-hidden flex flex-col justify-center border-b border-plum/20 relative z-10">
+    <section id="latest-videos" className="snap-start h-[100svh] py-24 bg-peach overflow-hidden flex flex-col justify-center border-b border-plum/20 relative z-10">
       <div className="text-center mb-12 md:mb-16 max-w-5xl mx-auto px-6 fade-up-element">
         <span className="text-plum font-extrabold uppercase tracking-widest text-xs md:text-sm mb-3 block">From the Channel</span>
         <h2 className="font-display text-4xl md:text-6xl font-bold text-navy mb-6 leading-tight">Latest Videos</h2>
@@ -630,7 +632,7 @@ const LatestChannelVideos = ({ videos = [] }: { videos?: any[] }) => {
 // About Priyanshi
 const AboutPriyanshi = ({ data }: { data: any }) => {
   return (
-    <section id="about" className="snap-start min-h-[100svh] py-24 bg-white relative overflow-hidden flex flex-col justify-center border-b border-gray-200">
+    <section id="about" className="snap-start h-[100svh] py-24 bg-white relative overflow-hidden flex flex-col justify-center border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
         <div className="fade-up-element relative order-2 md:order-1">
           <div className="w-[85%] aspect-[4/5] bg-peach/30 rounded-[3rem] relative overflow-hidden flex items-center justify-center shadow-lg">
@@ -676,8 +678,8 @@ const AboutPriyanshi = ({ data }: { data: any }) => {
 // CTA Footer
 const CTAFooter = ({ data }: { data: any }) => {
   return (
-    <section id="cta" className="snap-start min-h-[100svh] bg-gradient-to-br from-navy to-purple relative flex flex-col justify-between overflow-hidden">
-      <div className="absolute inset-0 bg-[url('https://res.cloudinary.com/dikk1fy3i/image/upload/v1731625041/fbp_assets/noise.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+    <section id="cta" className="snap-start h-[100svh] bg-gradient-to-br from-navy to-purple relative flex flex-col justify-between overflow-hidden">
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')] opacity-[0.03] mix-blend-overlay pointer-events-none"></div>
       
       {/* CTA Content */}
       <div className="flex-1 flex flex-col items-center justify-center py-24 px-6 relative z-10 fade-up-element space-y-10">
@@ -764,7 +766,7 @@ const CTAFooter = ({ data }: { data: any }) => {
 // Free Resources
 const FreeResources = () => {
   return (
-    <section id="free-resources" className="snap-start min-h-[100svh] py-24 bg-peach relative overflow-hidden border-b border-plum/20 flex flex-col justify-center">
+    <section id="free-resources" className="snap-start h-[100svh] py-24 bg-peach relative overflow-hidden border-b border-plum/20 flex flex-col justify-center">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-20 w-full">
         <div className="flex-1 fade-up-element order-2 md:order-1 relative">
           <div className="w-full aspect-square md:aspect-[4/3] bg-gradient-to-br from-purple/10 to-transparent rounded-[3rem] flex items-center justify-center relative overflow-hidden">
@@ -813,20 +815,15 @@ const Testimonials = ({ testimonials = [] }: { testimonials?: any[] }) => {
   }
 
   return (
-    <section id="testimonials" className="snap-start min-h-[100svh] flex flex-col justify-center py-16 bg-purple relative overflow-hidden border-b border-plum">
+    <section id="testimonials" className="snap-start h-[100svh] flex flex-col justify-center py-16 bg-white relative overflow-hidden border-b border-navy/10">
       {/* Ambient background glow to fill empty space */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber/10 rounded-full blur-[100px] pointer-events-none"></div>
       
       <div className="w-full text-center mb-10 relative z-10 fade-up-element px-6 max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-amber font-bold text-xs tracking-widest uppercase mb-4">
-          <Star className="w-3.5 h-3.5 fill-current" />
-          Student Success
-          <Star className="w-3.5 h-3.5 fill-current" />
-        </div>
-        <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-wide mb-4">
+        <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-extrabold text-navy tracking-wide mb-4">
           Don't just take <span className="text-amber">our word</span> for it.
         </h2>
-        <p className="text-white/70 text-base md:text-lg font-medium max-w-2xl mx-auto leading-relaxed">
+        <p className="text-navy/70 text-base md:text-lg font-medium max-w-2xl mx-auto leading-relaxed">
           Join thousands of successful students who have transformed their careers and achieved top ranks with our specialized forensic science programs.
         </p>
       </div>
@@ -866,29 +863,30 @@ const Testimonials = ({ testimonials = [] }: { testimonials?: any[] }) => {
 // FAQ Section
 const FAQs = ({ faqs = [] }: { faqs?: any[] }) => {
   return (
-    <section id="faq" className="snap-start min-h-[100svh] flex flex-col justify-center py-20 bg-peach relative overflow-hidden text-navy border-b border-plum/30">
-      <div className="w-full text-center mb-16 relative z-10">
+    <section id="faq" className="snap-start h-[100svh] flex flex-col justify-center py-20 bg-peach relative overflow-hidden text-navy border-b border-plum/30">
+      <div className="w-full text-center mb-8 relative z-10">
         <h2 className="font-display text-3xl md:text-4xl font-extrabold text-navy tracking-wide">
           Frequently Asked Questions
         </h2>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 w-full relative z-10 space-y-6 fade-up-element stagger-2">
-        {faqs.length === 0 ? (
-          <p className="text-purple text-center font-medium">FAQs are updating.</p>
-        ) : (
-          faqs.map((faq, i) => (
-            <div key={i} className="bg-purple/10 border border-purple/20 rounded-2xl p-6 text-left">
-              <h4 className="font-bold text-base text-navy mb-2 font-display flex items-center gap-2">
+      <div className="max-w-3xl mx-auto px-6 w-full relative z-10 space-y-3 fade-up-element stagger-2">
+        {(faqs.length === 0 ? [
+          { question: "Is this program suitable for CUET PG Forensic Science preparation?", answer: "Yes, our programs are specifically designed keeping in mind the syllabus and exam pattern of CUET PG and NFSU entrance examinations. We cover all topics comprehensively." },
+          { question: "Are the study notes chapter-wise or topic-wise?", answer: "All our study notes are meticulously organized chapter-wise to ensure a logical flow of learning. We also provide dedicated topic-wise cheat sheets for quick revision." },
+          { question: "Can I access the mock tests on my mobile phone?", answer: "Absolutely. Our platform is fully responsive, and you can attempt all mock tests, read study notes, and watch video lectures seamlessly from both your mobile phone and desktop." },
+          { question: "How does the 1-on-1 mentorship work?", answer: "When you enroll, you can book direct 1-on-1 video sessions with Priyanshi. These sessions are meant to solve your specific doubts, craft a personalized study plan, and provide career guidance." }
+        ] : faqs).map((faq, i) => (
+            <div key={i} className="bg-purple/10 border border-purple/20 rounded-2xl p-4 md:p-5 text-left">
+              <h4 className="font-bold text-sm md:text-base text-navy mb-1.5 font-display flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-rose shrink-0" />
                 Q: {faq.question}
               </h4>
-              <p className="text-purple text-sm leading-relaxed font-semibold pl-7">
+              <p className="text-purple text-xs md:text-sm leading-relaxed font-semibold pl-7">
                 A: {faq.answer}
               </p>
             </div>
-          ))
-        )}
+          ))}
       </div>
     </section>
   );
@@ -914,7 +912,7 @@ const BlogCarousel = ({ blogs = [] }: { blogs?: any[] }) => {
   }
 
   return (
-    <section id="blog-carousel" className="snap-start min-h-[100svh] py-24 bg-navy overflow-hidden flex flex-col justify-center border-b border-plum">
+    <section id="blog-carousel" className="snap-start h-[100svh] py-24 bg-navy overflow-hidden flex flex-col justify-center border-b border-plum">
       <div className="text-center mb-12 max-w-4xl mx-auto px-6">
         <span className="text-amber font-bold uppercase tracking-widest text-xs mb-2 block">Latest Case Files & Insights</span>
         <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">Featured Blogs</h2>
@@ -1002,6 +1000,8 @@ export default function LandingPageClient(props: any) {
     return () => { mounted = false; };
   }, []);
 
+
+
   useEffect(() => {
     const scrollContainer = document.getElementById('main-scroll-container');
     if (scrollContainer) {
@@ -1030,12 +1030,7 @@ export default function LandingPageClient(props: any) {
     'hero', 'guidance', 'courses', 'materials', 'tests', 'latestVideos', 'youtube', 'freeResources', 'blogs', 'testimonials', 'podcasts', 'about', 'faq', 'ctaFooter'
   ];
 
-  let sections = props.landingPageData?.sectionOrder || DEFAULT_ORDER;
-  
-  // If the database order is missing any newly added sections, reset to the default order requested by the user
-  if (!sections.includes('latestVideos') || !sections.includes('about') || !sections.includes('ctaFooter')) {
-    sections = DEFAULT_ORDER;
-  }
+  let sections = DEFAULT_ORDER;
 
   return (
     <div className="w-full relative flex flex-col pt-0 pb-0">

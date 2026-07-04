@@ -15,22 +15,40 @@ async function fetchYouTubeLatestVideos() {
       next: { revalidate: 3600 }
     });
     const xml = await res.text();
-    const videos = [];
+    const allVideos = [];
     const entries = xml.split('<entry>').slice(1);
+    
     for (const entry of entries.slice(0, 10)) {
       const titleMatch = entry.match(/<title>(.*?)<\/title>/);
       const linkMatch = entry.match(/<link rel="alternate" href="(.*?)"\/>/);
       const idMatch = entry.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
       
       if (titleMatch && linkMatch && idMatch) {
-        videos.push({
+        allVideos.push({
           title: titleMatch[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'"),
           url: linkMatch[1],
-          thumbnail: `https://img.youtube.com/vi/${idMatch[1]}/maxresdefault.jpg`
+          thumbnail: `https://img.youtube.com/vi/${idMatch[1]}/maxresdefault.jpg`,
+          id: idMatch[1]
         });
       }
     }
-    return videos;
+    
+    // Filter out shorts by checking the /shorts/ endpoint (200 = Short, 303 = Long Video redirect)
+    const longCheck = await Promise.all(
+      allVideos.map(async (vid) => {
+        try {
+          const res = await fetch(`https://www.youtube.com/shorts/${vid.id}`, { 
+            method: 'HEAD', 
+            redirect: 'manual' 
+          });
+          return res.status !== 200;
+        } catch {
+          return true; // Default to assuming it's a long video if network fails
+        }
+      })
+    );
+
+    return allVideos.filter((_, i) => longCheck[i]).slice(0, 3);
   } catch (error) {
     console.error('Failed to fetch YouTube latest videos:', error);
     return [];

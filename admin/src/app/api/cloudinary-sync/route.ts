@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { verifyAdmin } from '@/lib/auth-guard';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Server-side auth: verify token + admin role
+  const admin = await verifyAdmin(request);
+  if (admin instanceof Response) return admin;
+
   try {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -24,7 +29,9 @@ export async function GET() {
 
     const data = await res.json();
     return NextResponse.json({ resources: data.resources || [] });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

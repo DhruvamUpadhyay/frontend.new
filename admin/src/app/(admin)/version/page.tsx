@@ -103,7 +103,7 @@ const versions = [
     badge: "Foundation",
     changes: [
       "Project scaffolding: Two Next.js 16 (App Router + Turbopack) apps — frontend (port 3000) and admin (port 3001).",
-      "Brand Design System: Navy (#1D1A39), Amber (#F59F59), Peach (#E8BCB9), and Plum (#451952) color palette with Tailwind config.",
+      "Brand Design System: Navy (#1D1A39), Amber (#F59F59), Peach (#E8BCB9), and Plum (#1D1A39) color palette with Tailwind config.",
       "Custom Fonts: Syne (font-display), Inter (font-sans), and JetBrains Mono (font-mono) loaded via Google Fonts.",
       "Hero Section: Glassmorphism hero with gradient headline text, animated background blobs, and HeroBackground canvas component.",
       "Navbar: Transparent-to-solid scroll-aware navbar with CMS-driven links and Tawk.to live chat integration.",
@@ -172,7 +172,7 @@ const colorSwatches = [
   { name: 'Deep Navy', hex: '#1D1A39', usage: 'Background, primary text' },
   { name: 'Amber', hex: '#F59F59', usage: 'Highlights, calls-to-action, badges' },
   { name: 'Peach Rose', hex: '#E8BCB9', usage: 'Soft headings, hover states' },
-  { name: 'Deep Plum', hex: '#451952', usage: 'Blockquote backgrounds, accents' },
+  { name: 'Deep Plum', hex: '#1D1A39', usage: 'Blockquote backgrounds, accents' },
   { name: 'Soft White', hex: '#F5F5F5', usage: 'Body text, light backgrounds' },
 ];
 
@@ -277,7 +277,7 @@ export default function SystemVersion() {
       {activeTab === 'guide' && (
         <div className="space-y-6">
           {/* Intro Banner */}
-          <div className="bg-gradient-to-r from-[#1D1A39] to-[#451952] rounded-2xl p-6 text-white flex items-start gap-4">
+          <div className="bg-gradient-to-r from-[#1D1A39] to-[#1D1A39] rounded-2xl p-6 text-white flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-[#F59F59]/20 border border-[#F59F59]/30 flex items-center justify-center flex-shrink-0">
               <BookOpen className="w-5 h-5 text-[#F59F59]" />
             </div>
@@ -438,7 +438,7 @@ export default function SystemVersion() {
       {activeTab === 'vapt' && (
         <div className="space-y-6">
           {/* Info Banner */}
-          <div className="bg-gradient-to-r from-[#1D1A39] to-[#451952] rounded-2xl p-6 text-white flex items-start gap-4">
+          <div className="bg-gradient-to-r from-[#1D1A39] to-[#1D1A39] rounded-2xl p-6 text-white flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-[#F59F59]/20 border border-[#F59F59]/30 flex items-center justify-center flex-shrink-0">
               <ShieldAlert className="w-5 h-5 text-[#F59F59]" />
             </div>
@@ -504,7 +504,7 @@ export default function SystemVersion() {
       {/* THREAT PREVENTION TAB */}
       {activeTab === 'attacks' && (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-[#1D1A39] to-[#451952] rounded-2xl p-6 text-white flex items-start gap-4">
+          <div className="bg-gradient-to-r from-[#1D1A39] to-[#1D1A39] rounded-2xl p-6 text-white flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-[#F59F59]/20 border border-[#F59F59]/30 flex items-center justify-center flex-shrink-0">
               <Lock className="w-5 h-5 text-[#F59F59]" />
             </div>
@@ -564,7 +564,7 @@ export default function SystemVersion() {
       {/* AUDIT LOGS SECURITY TAB */}
       {activeTab === 'logs' && (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-[#1D1A39] to-[#451952] rounded-2xl p-6 text-white flex items-start gap-4">
+          <div className="bg-gradient-to-r from-[#1D1A39] to-[#1D1A39] rounded-2xl p-6 text-white flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-[#F59F59]/20 border border-[#F59F59]/30 flex items-center justify-center flex-shrink-0">
               <ScrollText className="w-5 h-5 text-[#F59F59]" />
             </div>
@@ -609,7 +609,7 @@ export default function SystemVersion() {
             <div className="border-t border-gray-100 pt-6 space-y-4">
               <h3 className="font-bold text-lg text-[#1D1A39] font-display">Log Audit Guidelines for Admins</h3>
               <ul className="list-disc list-inside space-y-2 text-sm text-gray-500 leading-relaxed">
-                <li><strong className="text-gray-700 font-bold">Trace User Action Trails:</strong> Search logs by typing an admin's email address to audit their full contribution and configuration edit history.</li>
+                <li><strong className="text-gray-700 font-bold">Trace User Action Trails:</strong> Search logs by typing an admin&apos;s email address to audit their full contribution and configuration edit history.</li>
                 <li><strong className="text-gray-700 font-bold">Investigate DB Changes:</strong> Expand any CREATE/UPDATE/DELETE log to inspect the JSON payload containing old vs new values.</li>
                 <li><strong className="text-gray-700 font-bold">Review Live Security Incidents:</strong> Pause live auto-refreshing in the audit log interface when performing forensics during an ongoing event.</li>
               </ul>

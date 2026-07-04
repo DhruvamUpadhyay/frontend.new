@@ -1,0 +1,24 @@
+{
+  "name": "fbp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "secretlint": "secretlint \"**/*\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://DhruvamUpadhyay@github.com/DhruvamUpadhyay/frontend.new.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DhruvamUpadhyay/frontend.new/issues"
+  },
+  "homepage": "https://github.com/DhruvamUpadhyay/frontend.new#readme",
+  "devDependencies": {
+    "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
+    "secretlint": "^13.0.2"
+  }
+}

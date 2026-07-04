@@ -161,7 +161,7 @@ export default function SystemSettings() {
                 <div>
                   <label className="block text-xs font-bold text-[#1D1A39] mb-1">Theme Color</label>
                   <div className="flex gap-4">
-                    {['#F59F59', '#af445a', '#451952', '#1D1A39'].map(c => (
+                    {['#F59F59', '#af445a', '#1D1A39', '#1D1A39'].map(c => (
                       <button
                         key={c}
                         type="button"

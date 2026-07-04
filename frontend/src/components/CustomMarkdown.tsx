@@ -44,7 +44,8 @@ export function CustomMarkdown({ content }: { content: string }) {
         const isSafe = /^(https?:\/\/|\/)/.test(trimmedUrl);
         const safeUrl = isSafe ? trimmedUrl : '';
         if (!safeUrl) return '';
-        return `<span class="my-10 w-full rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 bg-black/20 flex justify-center"><img src="${safeUrl}" alt="${alt}" class="w-full h-auto object-cover max-h-[500px]" loading="lazy" /></span>`;
+        const escapedAlt = alt.replace(/"/g, '&quot;');
+        return `<span class="my-10 w-full rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 bg-black/20 flex justify-center"><img src="${safeUrl}" alt="${escapedAlt}" class="w-full h-auto object-cover max-h-[500px]" loading="lazy" /></span>`;
       }
     );
 
@@ -167,7 +168,7 @@ export function CustomMarkdown({ content }: { content: string }) {
       elements.push(
         <blockquote
           key={`bq-${elementKey++}`}
-          className="border-l-4 border-[#f59f59] bg-[#451952]/20 pl-4 py-3 pr-2 rounded-r-xl italic text-white/80 my-6"
+          className="border-l-4 border-[#f59f59] bg-[#1D1A39]/20 pl-4 py-3 pr-2 rounded-r-xl italic text-white/80 my-6"
         >
           {parseInline(line.slice(2))}
         </blockquote>

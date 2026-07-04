@@ -51,9 +51,10 @@ export function Navbar({ navData }: { navData?: any }) {
     };
   }, [isMobileMenuOpen]);
 
-  const navLinkClass = "text-[15px] md:text-base font-medium text-white hover:text-amber transition-colors font-sans";
+  const navLinkClass = "text-[14px] md:text-[15px] font-medium text-white hover:text-amber transition-colors font-sans";
 
-  const mainLinks = navData?.mainLinks || [
+  // Ignoring navData temporarily to force the exact layout the user requested
+  const mainLinks = [
     { label: "Mentorship", url: "#mentorship" },
     { label: "Courses", url: "#courses" },
     { label: "Notes", url: "#notes" },
@@ -74,18 +75,19 @@ export function Navbar({ navData }: { navData?: any }) {
       <div className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-in-out flex justify-center ${
         isScrolled ? 'top-4 px-4' : 'top-0 px-0'
       }`}>
-        <nav className={`transition-all duration-300 relative z-50 ${
+        <nav className={`transition-all duration-300 relative z-50 flex items-center ${
         isScrolled 
-          ? 'w-full lg:w-auto py-3 px-4 sm:px-6 lg:px-8 bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] rounded-[2rem] lg:rounded-full border border-white/20' 
-          : 'w-full max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 bg-transparent'
+          ? 'w-max max-w-[95%] py-3 px-6 sm:px-10 bg-[#1D1A39] shadow-2xl rounded-full border border-white/10' 
+          : 'w-full py-6 sm:py-8 px-6 lg:px-12 xl:px-20 bg-transparent'
       }`}>
-        <div className={`flex flex-col lg:flex-row items-center transition-all duration-300 ${isScrolled ? 'justify-center lg:gap-10' : 'justify-between w-full'}`}>
+        <div className={`flex flex-col lg:flex-row items-center justify-between w-full ${isScrolled ? 'gap-8 lg:gap-12' : ''}`}>
           
           {/* Mobile Top Row / Desktop Left */}
-          <div className="flex items-center justify-between w-full lg:w-auto lg:flex-none z-50">
+          <div className={`flex items-center justify-between w-full lg:flex-none z-50 ${isScrolled ? 'lg:w-auto w-auto' : 'lg:w-[30%]'}`}>
             <Link href="/" className="flex items-center gap-2 lg:gap-3 group" onClick={() => setIsMobileMenuOpen(false)}>
               <img src="https://res.cloudinary.com/dikk1fy3i/image/upload/v1781625041/fbp_assets/SpIm4monkTVnlRNMgyMZBBMpY.png" alt="Logo" className="w-10 h-10 lg:w-12 lg:h-12 object-contain group-hover:scale-105 transition-transform shrink-0" />
-              <span className={`font-display font-bold text-lg lg:text-xl tracking-wide text-white transition-all duration-300 whitespace-nowrap flex items-center ${isScrolled ? 'w-auto opacity-100 lg:w-0 lg:opacity-0 lg:overflow-hidden' : 'w-auto opacity-100'}`}>
+              {/* Logo text hides entirely on scroll */}
+              <span className={`font-display font-bold text-lg lg:text-xl tracking-wide text-white transition-all duration-300 whitespace-nowrap flex items-center ${isScrolled ? 'hidden' : 'block'}`}>
                 {navData?.logoText ? navData.logoText : "Forensic Science By Priyanshi"}
               </span>
             </Link>
@@ -101,8 +103,8 @@ export function Navbar({ navData }: { navData?: any }) {
           </div>
 
           {/* Desktop Center (Links) */}
-          <div className={`hidden lg:flex flex-1 items-center justify-center transition-all duration-300 ${isScrolled ? 'flex-none' : ''}`}>
-            <div className="flex items-center gap-6 px-2">
+          <div className={`hidden lg:flex items-center justify-center z-40 ${isScrolled ? 'flex-none' : 'flex-1'}`}>
+            <div className="flex items-center gap-10 xl:gap-14 px-2">
               {mainLinks.map((link: any, i: number) => (
                  <a key={i} href={link.url} className={navLinkClass}>{link.label}</a>
               ))}
@@ -115,12 +117,12 @@ export function Navbar({ navData }: { navData?: any }) {
                   More <ChevronDown className="w-4 h-4" />
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-48 bg-purple border border-plum rounded-xl shadow-2xl py-2 flex flex-col z-50">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-48 bg-peach border border-navy/10 rounded-xl shadow-2xl py-2 flex flex-col z-50">
                     {moreOptions.map((opt: any, i: number) => (
                       opt.url.startsWith('/') ? 
-                      <Link key={i} href={opt.url} className="px-5 py-2.5 text-[14px] text-white hover:text-amber hover:bg-plum/40 font-sans transition-colors" onClick={() => setIsDropdownOpen(false)}>{opt.label}</Link>
+                      <Link key={i} href={opt.url} className="px-5 py-2.5 text-[14px] text-navy hover:text-navy hover:bg-navy/10 font-bold font-sans transition-colors" onClick={() => setIsDropdownOpen(false)}>{opt.label}</Link>
                       :
-                      <a key={i} href={opt.url} className="px-5 py-2.5 text-[14px] text-white hover:text-amber hover:bg-plum/40 font-sans transition-colors" onClick={() => setIsDropdownOpen(false)}>{opt.label}</a>
+                      <a key={i} href={opt.url} className="px-5 py-2.5 text-[14px] text-navy hover:text-navy hover:bg-navy/10 font-bold font-sans transition-colors" onClick={() => setIsDropdownOpen(false)}>{opt.label}</a>
                     ))}
                   </div>
                 )}
@@ -129,20 +131,31 @@ export function Navbar({ navData }: { navData?: any }) {
           </div>
 
           {/* Desktop Right (Login / Signup) */}
-          <div className={`hidden lg:flex lg:flex-none items-center gap-4 transition-all duration-300 ${isScrolled ? 'border-l border-plum pl-6 ml-2' : ''}`}>
-            <a 
-              href="https://app.forensicbypriyanshi.com/login" 
-              className="text-white hover:text-amber font-medium text-[15px] transition-colors font-sans"
-            >
-              Login
-            </a>
-            <span className="text-white/80">/</span>
-            <a 
-              href="https://app.forensicbypriyanshi.com/signup" 
-              className="text-white hover:text-amber font-medium text-[15px] transition-colors font-sans"
-            >
-              SignUp
-            </a>
+          <div className={`hidden lg:flex items-center justify-end z-50 ${isScrolled ? 'lg:w-auto w-auto' : 'lg:w-[30%]'}`}>
+            {isScrolled ? (
+              <a 
+                href="https://app.forensicbypriyanshi.com/login" 
+                className="px-6 py-2.5 rounded-full bg-amber text-navy font-bold text-[14px] shadow-lg hover:shadow-xl hover:scale-105 transition-all font-sans whitespace-nowrap"
+              >
+                Login / Sign Up
+              </a>
+            ) : (
+              <div className="flex items-center gap-4 border-l border-plum/50 pl-6">
+                <a 
+                  href="https://app.forensicbypriyanshi.com/login" 
+                  className="text-white hover:text-amber font-medium text-[14px] md:text-[15px] transition-colors font-sans whitespace-nowrap"
+                >
+                  Login
+                </a>
+                <span className="text-white/80">/</span>
+                <a 
+                  href="https://app.forensicbypriyanshi.com/signup" 
+                  className="text-white hover:text-amber font-medium text-[14px] md:text-[15px] transition-colors font-sans whitespace-nowrap"
+                >
+                  SignUp
+                </a>
+              </div>
+            )}
           </div>
 
         </div>
@@ -204,3 +217,4 @@ export function Navbar({ navData }: { navData?: any }) {
     </>
   );
 }
+

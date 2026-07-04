@@ -1,17 +1,31 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { z } from 'zod';
 
 // ──────────────────────────────────────────────────────────────────────
-// V5 FIX: Firestore-backed persistent rate limiter (survives restarts)
-// V6 FIX: CSRF origin check
+// Zod schema for newsletter subscription input
 // ──────────────────────────────────────────────────────────────────────
+const NewsletterSchema = z.object({
+  email: z.string()
+    .trim()
+    .email('Invalid email address format')
+    .max(254, 'Email too long')
+    .transform(val => val.toLowerCase()),
+});
 
+// ──────────────────────────────────────────────────────────────────────
+// CSRF origin check
+// ──────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'https://forensicsbypriyanshi.com',
   'https://www.forensicsbypriyanshi.com',
 ];
 
+// ──────────────────────────────────────────────────────────────────────
+// Firestore-backed persistent rate limiter (survives restarts)
+// FIX: Fails CLOSED — blocks requests when Firestore is unreachable
+// ──────────────────────────────────────────────────────────────────────
 async function checkRateLimit(ip: string): Promise<boolean> {
   const sanitizedIp = ip.replace(/[./:\\[\]]/g, '_');
   const ref = adminDb.collection('rate_limits').doc(`newsletter_${sanitizedIp}`);
@@ -38,7 +52,7 @@ async function checkRateLimit(ip: string): Promise<boolean> {
     });
   } catch (err) {
     console.error('Rate limit check failed:', err);
-    return true; // fail-open to avoid breaking the feature
+    return false; // FAIL-CLOSED: block when Firestore is unreachable
   }
 }
 
@@ -59,7 +73,7 @@ async function logSecurityEvent(action: string, details: Record<string, unknown>
 
 export async function POST(request: Request) {
   try {
-    // V6 FIX: CSRF — check Origin header
+    // CSRF — check Origin header
     const origin = request.headers.get('origin') || '';
     if (origin && !ALLOWED_ORIGINS.includes(origin)) {
       return NextResponse.json(
@@ -68,7 +82,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // V5 FIX: Persistent IP-based rate limiting via Firestore
+    // Persistent IP-based rate limiting via Firestore
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       request.headers.get('x-real-ip') ||
@@ -87,36 +101,40 @@ export async function POST(request: Request) {
       );
     }
 
-    // V10 FIX: Body size validation — newsletter payloads should never exceed 2KB
+    // Body size validation — newsletter payloads should never exceed 2KB
     const rawBody = await request.text();
     if (rawBody.length > 2_000) {
       return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
     }
 
-    const body = JSON.parse(rawBody);
-    const { email } = body;
-
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    // Zod schema validation
+    let parsed;
+    try {
+      const body = JSON.parse(rawBody);
+      parsed = NewsletterSchema.parse(body);
+    } catch (err: any) {
+      if (err instanceof z.ZodError || err?.name === 'ZodError') {
+        const message = err.errors?.[0]?.message || err.issues?.[0]?.message || 'Validation failed';
+        return NextResponse.json(
+          { error: message },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
     }
 
-    // Validate email format and length
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email) || email.length > 254) {
-      return NextResponse.json({ error: 'Invalid email address format' }, { status: 400 });
-    }
+    const email = parsed.email;
 
     // Check if already subscribed to prevent duplicate logs/db writes
-    const docId = email.toLowerCase().trim();
-    const existingDoc = await adminDb.collection('newsletter').doc(docId).get();
+    const existingDoc = await adminDb.collection('newsletter').doc(email).get();
     
     if (!existingDoc.exists) {
-      await adminDb.collection('newsletter').doc(docId).set({
-        email: docId,
+      await adminDb.collection('newsletter').doc(email).set({
+        email,
         timestamp: new Date().toISOString(),
       });
 
-      await logSecurityEvent('NEWSLETTER_SUBSCRIBE', { email: docId, ip });
+      await logSecurityEvent('NEWSLETTER_SUBSCRIBE', { email, ip });
     }
 
     return NextResponse.json({ success: true });
@@ -125,3 +143,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+

@@ -21,6 +21,21 @@ export default function AdminLogin() {
     
     try {
       const result = await signInWithEmailAndPassword(auth, email.trim(), password);
+      
+      // Get the ID token from Firebase
+      const idToken = await result.user.getIdToken();
+      
+      // Exchange it for a server-side session cookie
+      const sessionRes = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!sessionRes.ok) {
+        throw new Error('Failed to create server session');
+      }
+
       // Audit log: track admin logins
       try {
         await addDoc(collection(db, 'system_logs'), {
@@ -32,6 +47,7 @@ export default function AdminLogin() {
           details: { method: 'email_password' },
         });
       } catch { /* non-critical */ }
+      
       router.push('/');
     } catch (err: any) {
       console.error(err);

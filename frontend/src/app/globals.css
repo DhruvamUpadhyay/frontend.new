@@ -3,7 +3,7 @@
 
 @theme {
   --color-navy: #1D1A39;
-  --color-purple: #451952;
+  --color-purple: #1D1A39;
   --color-plum: #662549;
   --color-rose: #af445a;
   --color-amber: #f59f59;
@@ -48,7 +48,7 @@
 
 @layer components {
   .glass-card {
-    background: rgba(69, 25, 82, 0.25);
+    background: rgba(29, 26, 57, 0.25);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(232, 188, 185, 0.1);

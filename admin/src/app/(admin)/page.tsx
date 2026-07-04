@@ -659,7 +659,7 @@ export default function AdminVisualEditor() {
                 <div 
                   key="tests"
                   onClick={() => handleOpenDrawer('tests')}
-                  className="relative group border-b border-white/5 hover:border-dashed hover:border-yellow-400 cursor-pointer py-20 px-6 bg-[#451952]/30 transition-all"
+                  className="relative group border-b border-white/5 hover:border-dashed hover:border-yellow-400 cursor-pointer py-20 px-6 bg-[#1D1A39]/30 transition-all"
                 >
                   <div className="absolute inset-0 bg-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
                   <div className="absolute top-4 right-4 bg-yellow-500 text-[#1D1A39] text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 flex items-center gap-1">
@@ -722,7 +722,7 @@ export default function AdminVisualEditor() {
               return (
                 <div 
                   key="freeResources"
-                  className="relative group border-b border-white/5 hover:border-dashed hover:border-yellow-400 py-20 px-6 transition-all bg-[#451952]/30 text-left"
+                  className="relative group border-b border-white/5 hover:border-dashed hover:border-yellow-400 py-20 px-6 transition-all bg-[#1D1A39]/30 text-left"
                 >
                   <div className="absolute inset-0 bg-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity z-20" />
                   <div className="absolute top-4 right-4 bg-yellow-500 text-[#1D1A39] text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 flex items-center gap-1">
