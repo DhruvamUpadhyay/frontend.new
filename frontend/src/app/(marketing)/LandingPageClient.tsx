@@ -271,82 +271,187 @@ const OneOnOneGuidance = ({ data }: { data: any }) => {
 // Courses Listing
 const Courses = ({ initialCourses = [] }: { initialCourses?: any[] }) => {
   const [flipped, setFlipped] = useState<Record<number, boolean>>({});
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const toggleFlip = (index: number) => {
     setFlipped(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
+  // Pagination logic
+  const itemsPerPage = isExpanded ? 8 : 4;
+  const totalPages = Math.ceil(initialCourses.length / itemsPerPage);
+  const activePage = totalPages > 0 ? Math.max(0, Math.min(currentPage, totalPages - 1)) : 0;
+  const startIndex = isExpanded ? activePage * 8 : 0;
+  const visibleCourses = initialCourses.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentPage(prev => prev + 1);
+        setFlipped({});
+        setIsTransitioning(false);
+      }, 200);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentPage(prev => prev - 1);
+        setFlipped({});
+        setIsTransitioning(false);
+      }, 200);
+    }
+  };
+
+  const handleToggleExpand = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIsExpanded(prev => !prev);
+      setCurrentPage(0);
+      setFlipped({});
+      setIsTransitioning(false);
+    }, 200);
+  };
+
   return (
     <section id="courses" className="snap-start h-[100svh] pt-32 pb-16 bg-white relative z-10 border-b border-navy/10 flex flex-col justify-start overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6 w-full">
-        <div className="text-center mb-10 fade-up-element">
-          <h2 className="font-display text-4xl md:text-5xl font-bold mb-4 text-navy">Premium <span className="text-rose">Courses</span></h2>
-          <p className="text-navy/70 max-w-2xl mx-auto text-lg font-medium">Click on any course card to reveal curriculum details and enrollment options.</p>
+      <div className="max-w-6xl mx-auto px-6 w-full h-full flex flex-col justify-between">
+        
+        {/* Header */}
+        <div className="text-center mb-6 shrink-0 fade-up-element">
+          <h2 className="font-display text-4xl md:text-5xl font-bold mb-3 text-navy">Premium <span className="text-rose">Courses</span></h2>
+          <p className="text-navy/70 max-w-2xl mx-auto text-base sm:text-lg font-medium">Click on any course card to reveal curriculum details and enrollment options.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl mx-auto fade-up-element stagger-2">
-          {initialCourses.length === 0 && (
-            <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-navy/5 rounded-3xl border border-navy/10">
+
+        {initialCourses.length > 0 ? (
+          <div className="relative w-full flex-grow flex items-center justify-center">
+            
+            {/* Left Chevron */}
+            {isExpanded && activePage > 0 && (
+              <button 
+                onClick={handlePrevPage}
+                className="absolute left-1 md:-left-12 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-navy text-white flex items-center justify-center shadow-lg border border-white/10 hover:bg-rose transition-colors duration-300"
+              >
+                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+            )}
+
+            {/* Grid Container */}
+            <div className="w-full max-h-[52vh] sm:max-h-[58vh] xl:max-h-[62vh] overflow-y-auto px-8 md:px-0 custom-scrollbar">
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl mx-auto transition-opacity duration-200 ${isTransitioning ? 'opacity-0' : 'opacity-100'} fade-up-element stagger-2`}>
+                {visibleCourses.map((course, i) => {
+                  const globalIndex = startIndex + i;
+                  return (
+                    <div 
+                      key={course.id || globalIndex} 
+                      className="group w-full h-[150px] cursor-pointer [perspective:1000px]"
+                      onClick={() => toggleFlip(globalIndex)}
+                    >
+                      <div className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${flipped[globalIndex] ? '[transform:rotateY(180deg)]' : ''}`}>
+                        
+                        {/* FRONT FACE */}
+                        <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-navy rounded-[1.5rem] border border-white/10 shadow-xl overflow-hidden flex flex-row">
+                          {course.image ? (
+                            <div className="w-[35%] h-full relative shrink-0 bg-[#0a0514]">
+                              <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-[35%] h-full shrink-0 bg-gradient-to-br from-peach to-amber flex items-center justify-center p-3 relative">
+                              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent z-0"></div>
+                              <BookOpen className="w-8 h-8 text-white relative z-10" />
+                            </div>
+                          )}
+                          <div className="flex flex-col justify-between flex-grow p-4 relative z-10 bg-navy">
+                            <div>
+                              <span className="text-[10px] font-bold text-amber uppercase tracking-wider">Premium Course</span>
+                              <h3 className="font-display text-base sm:text-lg font-bold text-white leading-tight mt-1 line-clamp-2">{course.title}</h3>
+                            </div>
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                              <span className="text-amber font-bold text-base">{course.price || "Free"}</span>
+                              <div className="flex items-center gap-1 text-amber font-bold text-xs uppercase tracking-widest hover:text-white transition-colors">
+                                Info
+                                <ArrowRight className="w-3 h-3" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* BACK FACE */}
+                        <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-navy rounded-[1.5rem] border border-amber/40 shadow-xl overflow-hidden flex flex-col justify-between p-5">
+                          <div className="overflow-y-auto custom-scrollbar pr-1 flex-grow mb-2">
+                            <h3 className="font-display text-sm font-bold text-amber mb-2 border-b border-white/10 pb-1">{course.title}</h3>
+                            <p className="text-white/80 text-[11px] sm:text-xs leading-relaxed whitespace-pre-wrap font-medium">
+                              {course.details || "Comprehensive curriculum designed to master this subject. Includes interactive modules, regular mock tests, and 1-on-1 mentorship sessions."}
+                            </p>
+                          </div>
+                          
+                          <div className="pt-2 border-t border-white/10 shrink-0 flex items-center justify-between gap-3">
+                            <span className="text-white font-bold text-sm sm:text-base">{course.price || "Free"}</span>
+                            <div className="w-[100px] shrink-0">
+                              <Link 
+                                href="https://app.forensicbypriyanshi.com/login" 
+                                onClick={(e: any) => e.stopPropagation()} 
+                                className="group relative py-2 rounded-full bg-[#E8BCB9] text-[#1D1A39] font-bold text-xs transition-all flex items-center justify-center border border-white/10 hover:bg-white text-center w-full"
+                              >
+                                Enroll Now
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Chevron */}
+            {isExpanded && activePage < totalPages - 1 && (
+              <button 
+                onClick={handleNextPage}
+                className="absolute right-1 md:-right-12 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-navy text-white flex items-center justify-center shadow-lg border border-white/10 hover:bg-rose transition-colors duration-300"
+              >
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="w-full flex-grow flex items-center justify-center">
+            <div className="max-w-md w-full py-16 flex flex-col items-center justify-center text-center bg-navy/5 rounded-3xl border border-navy/10">
               <h3 className="text-2xl font-display font-bold text-navy mb-2">New Batches Launching Soon</h3>
               <p className="text-navy/70 font-medium">We are currently updating our premium course catalog. Check back shortly!</p>
             </div>
-          )}
-          {initialCourses.map((course, i) => (
-            <div 
-              key={i} 
-              className="group w-full aspect-[3/4] min-h-[450px] cursor-pointer [perspective:1000px]"
-              onClick={() => toggleFlip(i)}
+          </div>
+        )}
+
+        {/* Explore Button */}
+        {initialCourses.length > 4 && (
+          <div className="text-center mt-6 shrink-0">
+            <button 
+              onClick={handleToggleExpand}
+              className="group inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-navy text-white font-bold hover:bg-[#af445a] transition-all duration-300 shadow-lg hover:shadow-xl border border-white/10 cursor-pointer"
             >
-              <div className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${flipped[i] ? '[transform:rotateY(180deg)]' : ''}`}>
-                
-                {/* FRONT FACE */}
-                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-navy rounded-[2rem] border border-white/10 shadow-xl overflow-hidden flex flex-col">
-                  {course.image ? (
-                    <div className="h-[75%] w-full relative shrink-0 bg-[#0a0514] flex items-center justify-center p-2">
-                      <img src={course.image} alt={course.title} className="w-full h-full object-cover rounded-xl" />
-                    </div>
-                  ) : (
-                    <div className="h-[75%] w-full shrink-0 bg-gradient-to-br from-peach to-amber flex items-center justify-center p-6 relative">
-                      {/* Fallback pattern */}
-                    </div>
-                  )}
-                  <div className="flex flex-col justify-center flex-grow text-center relative z-10 bg-navy p-4">
-                    <h3 className="font-display text-2xl font-bold text-white leading-tight line-clamp-2">{course.title}</h3>
-                    
-                    <div className="flex items-center justify-center gap-2 text-amber font-bold text-xs uppercase tracking-widest mt-2 hover:text-white transition-colors">
-                      Learn More
-                      <ArrowRight className="w-4 h-4 animate-bounce-x" />
-                    </div>
-                  </div>
-                </div>
+              {isExpanded ? (
+                <>
+                  Collapse View
+                  <ChevronDown className="w-5 h-5 [transform:rotate(180deg)] transition-transform duration-300" />
+                </>
+              ) : (
+                <>
+                  Explore More
+                  <ChevronDown className="w-5 h-5 group-hover:translate-y-1 transition-transform duration-300" />
+                </>
+              )}
+            </button>
+          </div>
+        )}
 
-                {/* BACK FACE */}
-                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-navy rounded-[2rem] border border-amber/40 shadow-xl overflow-hidden flex flex-col justify-between p-8">
-                  <div className="overflow-y-auto custom-scrollbar pr-2 flex-grow mb-6">
-                    <h3 className="font-display text-2xl font-bold text-amber mb-4 border-b border-white/10 pb-3">{course.title}</h3>
-                    <p className="text-white/80 text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
-                      {course.details || "Comprehensive curriculum designed to master this subject. Includes interactive modules, regular mock tests, and 1-on-1 mentorship sessions."}
-                    </p>
-                  </div>
-                  
-                  <div className="pt-5 border-t border-white/10 shrink-0">
-                    <div className="flex items-center justify-between mb-5 bg-white/5 p-3 rounded-xl border border-white/10">
-                      <span className="text-white/60 text-xs font-bold uppercase tracking-wider">Enrollment Fee</span>
-                      <span className="text-white font-bold text-2xl">{course.price}</span>
-                    </div>
-                    <PremiumButton 
-                      to="https://app.forensicbypriyanshi.com/login" 
-                      primary 
-                      onClick={(e: any) => e.stopPropagation()} // Prevent card flip when clicking button
-                    >
-                      Enroll Now
-                    </PremiumButton>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
